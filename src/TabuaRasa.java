@@ -6,6 +6,11 @@ import java.awt.event.*;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * @author Ahmad Nizar
+ * @author Aflla Abdi
+ */
+
 public class TabuaRasa {
     public static void main(String[] args) {
         // Mengatur LookAndFeel default
