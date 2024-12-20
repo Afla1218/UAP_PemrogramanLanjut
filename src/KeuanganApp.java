@@ -3,6 +3,10 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * @author Ahmad Nizar
+ * @author Aflla Abdi
+ */
 public class KeuanganApp extends JFrame {
     // Komponen UI
     private JComboBox<String> jenisComboBox;
