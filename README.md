@@ -51,4 +51,4 @@
 1. **Clone Repository:**
 
    ```bash
-   git clone (https://github.com/Afla1218/UAP_PemrogramanLanjut.git)
+   git clone https://github.com/Afla1218/UAP_PemrogramanLanjut.git
