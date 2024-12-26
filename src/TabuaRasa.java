@@ -68,10 +68,10 @@ public class TabuaRasa {
         private DashboardPanel dashboardPanel;
         private PendapatanPanel pendapatanPanel;
         private PengeluaranPanel pengeluaranPanel;
-        private LaporanPanel laporanPanel;
+        //private LaporanPanel laporanPanel;
         private TabunganPanel tabunganPanel;
-        private TransaksiBerulangPanel transaksiBerulangPanel;
-        private KalkulatorPanel kalkulatorPanel;
+        //private TransaksiBerulangPanel transaksiBerulangPanel;
+        //private KalkulatorPanel kalkulatorPanel;
         private PengaturanPanel pengaturanPanel;
 
         public MainFrame(AppModel model) {
@@ -308,7 +308,7 @@ public class TabuaRasa {
     // -----------------------------------------------------
     // PANEL LAPORAN
     // -----------------------------------------------------
-    static class LaporanPanel extends JPanel {
+    /*static class LaporanPanel extends JPanel {
         private JLabel lblInfo;
 
         public LaporanPanel() {
@@ -329,7 +329,7 @@ public class TabuaRasa {
         public void updateLaporan(/* data */) {
             // TODO: update chart dan laporan
         }
-    }
+    }*/
 
     // -----------------------------------------------------
     // PANEL TABUNGAN
@@ -403,7 +403,7 @@ public class TabuaRasa {
     // -----------------------------------------------------
     // PANEL TRANSAKSI BERULANG
     // -----------------------------------------------------
-    static class TransaksiBerulangPanel extends JPanel {
+    /*static class TransaksiBerulangPanel extends JPanel {
         private JTextField txtJumlah;
         private JComboBox<String> cmbKategori;
         private JComboBox<String> cmbFrekuensi;
@@ -458,12 +458,12 @@ public class TabuaRasa {
                 }
             });
         }
-    }
+    }*/
 
     // -----------------------------------------------------
     // PANEL KALKULATOR
     // -----------------------------------------------------
-    static class KalkulatorPanel extends JPanel {
+    /*static class KalkulatorPanel extends JPanel {
         private JTextField txtPendapatan;
         private JTextField txtPengeluaran;
         private JTextField txtInvestasi;
@@ -525,7 +525,7 @@ public class TabuaRasa {
                 }
             });
         }
-    }
+    }*/
 
     // -----------------------------------------------------
     // PANEL PENGATURAN
