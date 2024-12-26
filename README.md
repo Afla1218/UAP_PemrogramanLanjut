@@ -51,4 +51,4 @@
 1. **Clone Repository:**
 
    ```bash
-   git clone https://github.com/username/pengelola-keuangan-pribadi.git
+   git clone (https://github.com/Afla1218/UAP_PemrogramanLanjut.git)
