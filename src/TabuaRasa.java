@@ -308,7 +308,7 @@ public class TabuaRasa {
     // -----------------------------------------------------
     // PANEL LAPORAN
     // -----------------------------------------------------
-    static class LaporanPanel extends JPanel {
+    /*static class LaporanPanel extends JPanel {
         private JLabel lblInfo;
 
         public LaporanPanel() {
@@ -329,7 +329,7 @@ public class TabuaRasa {
         public void updateLaporan(/* data */) {
             // TODO: update chart dan laporan
         }
-    }
+    }*/
 
     // -----------------------------------------------------
     // PANEL TABUNGAN
@@ -463,7 +463,7 @@ public class TabuaRasa {
     // -----------------------------------------------------
     // PANEL KALKULATOR
     // -----------------------------------------------------
-    static class KalkulatorPanel extends JPanel {
+    /*static class KalkulatorPanel extends JPanel {
         private JTextField txtPendapatan;
         private JTextField txtPengeluaran;
         private JTextField txtInvestasi;
@@ -525,7 +525,7 @@ public class TabuaRasa {
                 }
             });
         }
-    }
+    }*/
 
     // -----------------------------------------------------
     // PANEL PENGATURAN
