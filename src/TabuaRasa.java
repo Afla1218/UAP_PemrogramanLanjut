@@ -6,11 +6,6 @@ import java.awt.event.*;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
-/**
- * @author Ahmad Nizar
- * @author Aflla Abdi
- */
-
 public class TabuaRasa {
     public static void main(String[] args) {
         // Mengatur LookAndFeel default
@@ -24,23 +19,25 @@ public class TabuaRasa {
     }
 
     // -----------------------------------------------------
-    // MODEL APLIKASI (SIMPLE STATE MANAGEMENT)
+    // MODEL APLIKASI (MANAGEMENT STATE SEDERHANA)
     // -----------------------------------------------------
     static class AppModel {
         private double totalPendapatan = 0;
         private double totalPengeluaran = 0;
         private double targetTabungan = 0;
-        private double totalTabungan = 0; // totalPendapatan - totalPengeluaran - investasi (jika ada)
 
         public double getTotalPendapatan() {
             return totalPendapatan;
         }
+
         public double getTotalPengeluaran() {
             return totalPengeluaran;
         }
+
         public double getTargetTabungan() {
             return targetTabungan;
         }
+
         public double getTotalTabungan() {
             return totalPendapatan - totalPengeluaran;
         }
@@ -68,32 +65,42 @@ public class TabuaRasa {
         private DashboardPanel dashboardPanel;
         private PendapatanPanel pendapatanPanel;
         private PengeluaranPanel pengeluaranPanel;
-        //private LaporanPanel laporanPanel;
+        private LaporanPanel laporanPanel;
         private TabunganPanel tabunganPanel;
-        //private TransaksiBerulangPanel transaksiBerulangPanel;
-        //private KalkulatorPanel kalkulatorPanel;
+        private TransaksiBerulangPanel transaksiBerulangPanel;
+        private KalkulatorPanel kalkulatorPanel;
         private PengaturanPanel pengaturanPanel;
 
         public MainFrame(AppModel model) {
             this.model = model;
             setTitle("TabuaRasa - Pengelola Keuangan Pribadi");
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            setSize(1200, 700);
+            setSize(1300, 800);
             setLocationRelativeTo(null);
+            setMinimumSize(new Dimension(1200, 700));
 
             initMenuBar();
             initComponents();
         }
 
+        // Inisialisasi Menu Bar tanpa ikon
         private void initMenuBar() {
             JMenuBar menuBar = new JMenuBar();
+            menuBar.setBackground(new Color(60, 63, 65));
+
+            // Menu File
             JMenu menuFile = new JMenu("File");
+            menuFile.setForeground(Color.WHITE);
             JMenuItem miExit = new JMenuItem("Exit");
+            // miExit.setIcon(new ImageIcon(getClass().getResource("/icons/exit.png"))); // Di-comment
             miExit.addActionListener(e -> System.exit(0));
             menuFile.add(miExit);
 
+            // Menu Help
             JMenu menuHelp = new JMenu("Help");
+            menuHelp.setForeground(Color.WHITE);
             JMenuItem miAbout = new JMenuItem("About");
+            // miAbout.setIcon(new ImageIcon(getClass().getResource("/icons/about.png"))); // Di-comment
             miAbout.addActionListener(e -> {
                 JOptionPane.showMessageDialog(this,
                         "TabuaRasa - Pengelola Keuangan Pribadi\nVersi 1.0\nLebih Interaktif dan Responsif",
@@ -108,6 +115,7 @@ public class TabuaRasa {
             setJMenuBar(menuBar);
         }
 
+        // Inisialisasi Semua Komponen Panel tanpa ikon pada tab
         private void initComponents() {
             dashboardPanel = new DashboardPanel(model);
             pendapatanPanel = new PendapatanPanel(model, dashboardPanel);
@@ -119,6 +127,8 @@ public class TabuaRasa {
             pengaturanPanel = new PengaturanPanel(this);
 
             tabbedPane = new JTabbedPane();
+            tabbedPane.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            // Menambahkan tab tanpa ikon
             tabbedPane.addTab("Dashboard", dashboardPanel);
             tabbedPane.addTab("Pendapatan", pendapatanPanel);
             tabbedPane.addTab("Pengeluaran", pengeluaranPanel);
@@ -145,28 +155,51 @@ public class TabuaRasa {
         public DashboardPanel(AppModel model) {
             this.model = model;
             setLayout(new BorderLayout());
-            setBorder(new EmptyBorder(20,20,20,20));
+            setBackground(new Color(230, 230, 250));
+            setBorder(new EmptyBorder(30, 30, 30, 30));
 
-            JPanel panelInfo = new JPanel(new GridLayout(2,2,10,10));
-            lblSaldo = new JLabel("Saldo saat ini: Rp 0");
-            lblPendapatanBulanIni = new JLabel("Pendapatan Bulan Ini: Rp 0");
-            lblPengeluaranBulanIni = new JLabel("Pengeluaran Bulan Ini: Rp 0");
-            lblProgressTabungan = new JLabel("Progress Tabungan: 0%");
-
-            panelInfo.add(lblSaldo);
-            panelInfo.add(lblPendapatanBulanIni);
-            panelInfo.add(lblPengeluaranBulanIni);
-            panelInfo.add(lblProgressTabungan);
-
+            // Judul
             JLabel lblTitle = new JLabel("Dashboard Keuangan");
-            lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 18f));
+            lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
             lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
+            lblTitle.setForeground(new Color(25, 25, 112));
+
+            // Panel Informasi
+            JPanel panelInfo = new JPanel(new GridBagLayout());
+            panelInfo.setOpaque(false);
+            panelInfo.setBorder(new TitledBorder(new LineBorder(new Color(25, 25, 112), 2), "Informasi Keuangan", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(25, 25, 112)));
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(20, 20, 20, 20);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.anchor = GridBagConstraints.WEST;
+
+            lblSaldo = new JLabel("Saldo saat ini: Rp 0");
+            lblSaldo.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+            panelInfo.add(lblSaldo, gbc);
+
+            gbc.gridy++;
+            lblPendapatanBulanIni = new JLabel("Pendapatan Bulan Ini: Rp 0");
+            lblPendapatanBulanIni.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+            panelInfo.add(lblPendapatanBulanIni, gbc);
+
+            gbc.gridy++;
+            lblPengeluaranBulanIni = new JLabel("Pengeluaran Bulan Ini: Rp 0");
+            lblPengeluaranBulanIni.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+            panelInfo.add(lblPengeluaranBulanIni, gbc);
+
+            gbc.gridy++;
+            lblProgressTabungan = new JLabel("Progress Tabungan: 0%");
+            lblProgressTabungan.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+            panelInfo.add(lblProgressTabungan, gbc);
 
             add(lblTitle, BorderLayout.NORTH);
             add(panelInfo, BorderLayout.CENTER);
             updateDashboardData();
         }
 
+        // Update Data pada Dashboard
         public void updateDashboardData() {
             double saldo = model.getTotalTabungan();
             double pendapatan = model.getTotalPendapatan();
@@ -178,10 +211,10 @@ public class TabuaRasa {
                 if (progress > 1) progress = 1;
             }
 
-            lblSaldo.setText("Saldo saat ini: Rp " + saldo);
-            lblPendapatanBulanIni.setText("Pendapatan: Rp " + pendapatan);
-            lblPengeluaranBulanIni.setText("Pengeluaran: Rp " + pengeluaran);
-            lblProgressTabungan.setText("Progress Tabungan: " + (int)(progress*100) + "%");
+            lblSaldo.setText(String.format("Saldo saat ini: Rp %.2f", saldo));
+            lblPendapatanBulanIni.setText(String.format("Pendapatan Bulan Ini: Rp %.2f", pendapatan));
+            lblPengeluaranBulanIni.setText(String.format("Pengeluaran Bulan Ini: Rp %.2f", pengeluaran));
+            lblProgressTabungan.setText(String.format("Progress Tabungan: %d%%", (int)(progress * 100)));
         }
     }
 
@@ -201,39 +234,78 @@ public class TabuaRasa {
             this.model = model;
             this.dashboard = dashboard;
             setLayout(new BorderLayout());
-            setBorder(new EmptyBorder(20,20,20,20));
+            setBackground(new Color(245, 245, 220));
+            setBorder(new EmptyBorder(30, 30, 30, 30));
 
-            JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-            inputPanel.setBorder(new TitledBorder(new EtchedBorder(), "Tambah Pendapatan"));
+            // Panel Input Pendapatan
+            JPanel inputPanel = new JPanel(new GridBagLayout());
+            inputPanel.setOpaque(false);
+            inputPanel.setBorder(new TitledBorder(new LineBorder(new Color(34, 139, 34), 2), "Tambah Pendapatan", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(34, 139, 34)));
 
-            txtJumlah = new JTextField(10);
-            txtJumlah.setToolTipText("Masukkan jumlah pendapatan");
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.anchor = GridBagConstraints.EAST;
+
+            inputPanel.add(new JLabel("Jumlah: "), gbc);
+            gbc.gridx++;
+            txtJumlah = new JTextField(15);
+            txtJumlah.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(txtJumlah, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            inputPanel.add(new JLabel("Kategori: "), gbc);
+            gbc.gridx++;
             cmbKategori = new JComboBox<>(new String[]{"Pekerjaan", "Investasi", "Lainnya"});
-            cmbKategori.setToolTipText("Pilih kategori pendapatan");
+            cmbKategori.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(cmbKategori, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            gbc.gridwidth = 2;
+            gbc.anchor = GridBagConstraints.CENTER;
             btnTambah = new JButton("Tambah");
-            btnTambah.setToolTipText("Klik untuk menambahkan pendapatan");
+            btnTambah.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            btnTambah.setBackground(new Color(34, 139, 34));
+            btnTambah.setForeground(Color.WHITE);
+            btnTambah.setFocusPainted(false);
+            btnTambah.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            inputPanel.add(btnTambah, gbc);
 
-            inputPanel.add(new JLabel("Jumlah:"));
-            inputPanel.add(txtJumlah);
-            inputPanel.add(new JLabel("Kategori:"));
-            inputPanel.add(cmbKategori);
-            inputPanel.add(btnTambah);
+            // Tambahkan Efek Hover pada Tombol
+            btnTambah.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    btnTambah.setBackground(new Color(50, 205, 50));
+                }
 
-            tblModel = new DefaultTableModel(new Object[]{"Tanggal","Jumlah","Kategori"},0);
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    btnTambah.setBackground(new Color(34, 139, 34));
+                }
+            });
+
+            // Panel Riwayat Pendapatan
+            tblModel = new DefaultTableModel(new Object[]{"Tanggal", "Jumlah", "Kategori"}, 0);
             tblRiwayat = new JTable(tblModel);
+            tblRiwayat.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            tblRiwayat.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
             JScrollPane scroll = new JScrollPane(tblRiwayat);
-            scroll.setBorder(new TitledBorder(new EtchedBorder(), "Riwayat Pendapatan"));
+            scroll.setBorder(new TitledBorder(new LineBorder(new Color(34, 139, 34), 2), "Riwayat Pendapatan", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(34, 139, 34)));
 
             add(inputPanel, BorderLayout.NORTH);
             add(scroll, BorderLayout.CENTER);
 
+            // Action Listener untuk Tombol Tambah
             btnTambah.addActionListener(e -> {
                 try {
                     double jumlah = Double.parseDouble(txtJumlah.getText());
                     if (jumlah <= 0) throw new NumberFormatException();
                     String kategori = (String) cmbKategori.getSelectedItem();
                     Date tanggal = new Date();
-                    tblModel.addRow(new Object[]{tanggal, jumlah, kategori});
+                    tblModel.addRow(new Object[]{tanggal, String.format("Rp %.2f", jumlah), kategori});
                     model.addPendapatan(jumlah);
                     dashboard.updateDashboardData();
                     txtJumlah.setText("");
@@ -261,39 +333,78 @@ public class TabuaRasa {
             this.model = model;
             this.dashboard = dashboard;
             setLayout(new BorderLayout());
-            setBorder(new EmptyBorder(20,20,20,20));
+            setBackground(new Color(255, 228, 225));
+            setBorder(new EmptyBorder(30, 30, 30, 30));
 
-            JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-            inputPanel.setBorder(new TitledBorder(new EtchedBorder(), "Tambah Pengeluaran"));
+            // Panel Input Pengeluaran
+            JPanel inputPanel = new JPanel(new GridBagLayout());
+            inputPanel.setOpaque(false);
+            inputPanel.setBorder(new TitledBorder(new LineBorder(new Color(178, 34, 34), 2), "Tambah Pengeluaran", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(178, 34, 34)));
 
-            txtJumlah = new JTextField(10);
-            txtJumlah.setToolTipText("Masukkan jumlah pengeluaran");
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.anchor = GridBagConstraints.EAST;
+
+            inputPanel.add(new JLabel("Jumlah: "), gbc);
+            gbc.gridx++;
+            txtJumlah = new JTextField(15);
+            txtJumlah.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(txtJumlah, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            inputPanel.add(new JLabel("Kategori: "), gbc);
+            gbc.gridx++;
             cmbKategori = new JComboBox<>(new String[]{"Makanan", "Transportasi", "Hiburan", "Lainnya"});
-            cmbKategori.setToolTipText("Pilih kategori pengeluaran");
+            cmbKategori.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(cmbKategori, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            gbc.gridwidth = 2;
+            gbc.anchor = GridBagConstraints.CENTER;
             btnTambah = new JButton("Tambah");
-            btnTambah.setToolTipText("Klik untuk menambahkan pengeluaran");
+            btnTambah.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            btnTambah.setBackground(new Color(178, 34, 34));
+            btnTambah.setForeground(Color.WHITE);
+            btnTambah.setFocusPainted(false);
+            btnTambah.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            inputPanel.add(btnTambah, gbc);
 
-            inputPanel.add(new JLabel("Jumlah:"));
-            inputPanel.add(txtJumlah);
-            inputPanel.add(new JLabel("Kategori:"));
-            inputPanel.add(cmbKategori);
-            inputPanel.add(btnTambah);
+            // Tambahkan Efek Hover pada Tombol
+            btnTambah.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    btnTambah.setBackground(new Color(220, 20, 60));
+                }
 
-            tblModel = new DefaultTableModel(new Object[]{"Tanggal","Jumlah","Kategori"},0);
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    btnTambah.setBackground(new Color(178, 34, 34));
+                }
+            });
+
+            // Panel Riwayat Pengeluaran
+            tblModel = new DefaultTableModel(new Object[]{"Tanggal", "Jumlah", "Kategori"}, 0);
             tblRiwayat = new JTable(tblModel);
+            tblRiwayat.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            tblRiwayat.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
             JScrollPane scroll = new JScrollPane(tblRiwayat);
-            scroll.setBorder(new TitledBorder(new EtchedBorder(), "Riwayat Pengeluaran"));
+            scroll.setBorder(new TitledBorder(new LineBorder(new Color(178, 34, 34), 2), "Riwayat Pengeluaran", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(178, 34, 34)));
 
             add(inputPanel, BorderLayout.NORTH);
             add(scroll, BorderLayout.CENTER);
 
+            // Action Listener untuk Tombol Tambah
             btnTambah.addActionListener(e -> {
                 try {
                     double jumlah = Double.parseDouble(txtJumlah.getText());
                     if (jumlah <= 0) throw new NumberFormatException();
                     String kategori = (String) cmbKategori.getSelectedItem();
                     Date tanggal = new Date();
-                    tblModel.addRow(new Object[]{tanggal, jumlah, kategori});
+                    tblModel.addRow(new Object[]{tanggal, String.format("Rp %.2f", jumlah), kategori});
                     model.addPengeluaran(jumlah);
                     dashboard.updateDashboardData();
                     txtJumlah.setText("");
@@ -308,28 +419,34 @@ public class TabuaRasa {
     // -----------------------------------------------------
     // PANEL LAPORAN
     // -----------------------------------------------------
-    /*static class LaporanPanel extends JPanel {
+    static class LaporanPanel extends JPanel {
         private JLabel lblInfo;
 
         public LaporanPanel() {
             setLayout(new BorderLayout());
-            setBorder(new EmptyBorder(20,20,20,20));
+            setBackground(new Color(224, 255, 255));
+            setBorder(new EmptyBorder(30, 30, 30, 30));
 
-            lblInfo = new JLabel("Grafik Pendapatan vs Pengeluaran akan ditampilkan di sini (Belum diimplementasi)");
-            lblInfo.setHorizontalAlignment(SwingConstants.CENTER);
-
+            // Judul
             JLabel lblTitle = new JLabel("Laporan Keuangan");
-            lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 18f));
+            lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
             lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
+            lblTitle.setForeground(new Color(0, 139, 139));
+
+            // Informasi Placeholder
+            lblInfo = new JLabel("Grafik Pendapatan vs Pengeluaran akan ditampilkan di sini (Belum diimplementasi)");
+            lblInfo.setFont(new Font("Segoe UI", Font.ITALIC, 16));
+            lblInfo.setHorizontalAlignment(SwingConstants.CENTER);
+            lblInfo.setForeground(new Color(0, 139, 139));
 
             add(lblTitle, BorderLayout.NORTH);
             add(lblInfo, BorderLayout.CENTER);
         }
 
         public void updateLaporan(/* data */) {
-            // TODO: update chart dan laporan
+            // TODO: Implementasi Grafik dan Laporan
         }
-    }*/
+    }
 
     // -----------------------------------------------------
     // PANEL TABUNGAN
@@ -341,46 +458,104 @@ public class TabuaRasa {
         private JTextField txtNamaTarget;
         private JButton btnSetTarget;
         private JProgressBar progressBar;
+        private JLabel lblNamaTarget;
 
         public TabunganPanel(AppModel model, DashboardPanel dashboard) {
             this.model = model;
             this.dashboard = dashboard;
             setLayout(new BorderLayout());
-            setBorder(new EmptyBorder(20,20,20,20));
+            setBackground(new Color(240, 255, 240));
+            setBorder(new EmptyBorder(30, 30, 30, 30));
 
-            JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-            inputPanel.setBorder(new TitledBorder(new EtchedBorder(), "Target Tabungan"));
+            // Panel Input Target Tabungan
+            JPanel inputPanel = new JPanel(new GridBagLayout());
+            inputPanel.setOpaque(false);
+            inputPanel.setBorder(new TitledBorder(new LineBorder(new Color(34, 139, 34), 2), "Target Tabungan", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(34, 139, 34)));
 
-            txtNamaTarget = new JTextField(10);
-            txtNamaTarget.setToolTipText("Masukkan nama target tabungan (misal: Rumah, Liburan)");
-            txtTarget = new JTextField(10);
-            txtTarget.setToolTipText("Masukkan jumlah target tabungan");
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.anchor = GridBagConstraints.EAST;
+
+            inputPanel.add(new JLabel("Nama Target: "), gbc);
+            gbc.gridx++;
+            txtNamaTarget = new JTextField(15);
+            txtNamaTarget.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(txtNamaTarget, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            inputPanel.add(new JLabel("Jumlah Target: "), gbc);
+            gbc.gridx++;
+            txtTarget = new JTextField(15);
+            txtTarget.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(txtTarget, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            gbc.gridwidth = 2;
+            gbc.anchor = GridBagConstraints.CENTER;
             btnSetTarget = new JButton("Set Target Tabungan");
-            btnSetTarget.setToolTipText("Klik untuk menetapkan target tabungan");
+            btnSetTarget.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            btnSetTarget.setBackground(new Color(34, 139, 34));
+            btnSetTarget.setForeground(Color.WHITE);
+            btnSetTarget.setFocusPainted(false);
+            btnSetTarget.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            inputPanel.add(btnSetTarget, gbc);
 
-            inputPanel.add(new JLabel("Nama Target:"));
-            inputPanel.add(txtNamaTarget);
-            inputPanel.add(new JLabel("Jumlah Target:"));
-            inputPanel.add(txtTarget);
-            inputPanel.add(btnSetTarget);
+            // Tambahkan Efek Hover pada Tombol
+            btnSetTarget.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    btnSetTarget.setBackground(new Color(50, 205, 50));
+                }
 
-            progressBar = new JProgressBar(0,100);
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    btnSetTarget.setBackground(new Color(34, 139, 34));
+                }
+            });
+
+            // Panel Progress Tabungan
+            JPanel progressPanel = new JPanel(new BorderLayout());
+            progressPanel.setOpaque(false);
+            progressPanel.setBorder(new TitledBorder(new LineBorder(new Color(34, 139, 34), 2), "Progress Tabungan", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(34, 139, 34)));
+
+            progressBar = new JProgressBar(0, 100);
             progressBar.setValue(0);
             progressBar.setStringPainted(true);
-            progressBar.setBorder(new TitledBorder(new EtchedBorder(), "Progress Tabungan"));
+            progressBar.setForeground(new Color(34, 139, 34));
+
+            lblNamaTarget = new JLabel("Nama Target: -");
+            lblNamaTarget.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            lblNamaTarget.setHorizontalAlignment(SwingConstants.CENTER);
+
+            progressPanel.add(lblNamaTarget, BorderLayout.NORTH);
+            progressPanel.add(progressBar, BorderLayout.CENTER);
 
             add(inputPanel, BorderLayout.NORTH);
-            add(progressBar, BorderLayout.CENTER);
+            add(progressPanel, BorderLayout.CENTER);
 
+            // Action Listener untuk Tombol Set Target
             btnSetTarget.addActionListener(e -> {
                 try {
                     double target = Double.parseDouble(txtTarget.getText());
                     if (target <= 0) throw new NumberFormatException();
+                    String namaTarget = txtNamaTarget.getText().trim();
+                    if (namaTarget.isEmpty()) {
+                        JOptionPane.showMessageDialog(TabunganPanel.this,
+                                "Masukkan nama target tabungan", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                     model.setTargetTabungan(target);
+                    lblNamaTarget.setText("Nama Target: " + namaTarget);
                     updateProgress();
                     dashboard.updateDashboardData();
                     JOptionPane.showMessageDialog(TabunganPanel.this,
                             "Target tabungan telah ditetapkan!", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                    txtTarget.setText("");
+                    txtNamaTarget.setText("");
                 } catch (NumberFormatException ex1) {
                     JOptionPane.showMessageDialog(TabunganPanel.this,
                             "Masukkan jumlah target yang valid (>0)", "Error", JOptionPane.ERROR_MESSAGE);
@@ -388,22 +563,24 @@ public class TabuaRasa {
             });
         }
 
+        // Update Progress Bar
         public void updateProgress() {
             double current = model.getTotalTabungan();
             double target = model.getTargetTabungan();
             int value = 0;
-            if(target > 0) {
-                value = (int)((current/target)*100);
+            if (target > 0) {
+                value = (int)((current / target) * 100);
                 if (value > 100) value = 100;
             }
             progressBar.setValue(value);
+            progressBar.setString(value + "%");
         }
     }
 
     // -----------------------------------------------------
     // PANEL TRANSAKSI BERULANG
     // -----------------------------------------------------
-    /*static class TransaksiBerulangPanel extends JPanel {
+    static class TransaksiBerulangPanel extends JPanel {
         private JTextField txtJumlah;
         private JComboBox<String> cmbKategori;
         private JComboBox<String> cmbFrekuensi;
@@ -413,44 +590,86 @@ public class TabuaRasa {
 
         public TransaksiBerulangPanel() {
             setLayout(new BorderLayout());
-            setBorder(new EmptyBorder(20,20,20,20));
+            setBackground(new Color(255, 250, 205));
+            setBorder(new EmptyBorder(30, 30, 30, 30));
 
-            JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-            inputPanel.setBorder(new TitledBorder(new EtchedBorder(), "Transaksi Berulang"));
+            // Panel Input Transaksi Berulang
+            JPanel inputPanel = new JPanel(new GridBagLayout());
+            inputPanel.setOpaque(false);
+            inputPanel.setBorder(new TitledBorder(new LineBorder(new Color(218, 165, 32), 2), "Transaksi Berulang", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(218, 165, 32)));
 
-            txtJumlah = new JTextField(10);
-            txtJumlah.setToolTipText("Masukkan jumlah transaksi berulang");
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.anchor = GridBagConstraints.EAST;
+
+            inputPanel.add(new JLabel("Jumlah: "), gbc);
+            gbc.gridx++;
+            txtJumlah = new JTextField(15);
+            txtJumlah.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(txtJumlah, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            inputPanel.add(new JLabel("Tipe: "), gbc);
+            gbc.gridx++;
             cmbKategori = new JComboBox<>(new String[]{"Pendapatan", "Pengeluaran"});
-            cmbKategori.setToolTipText("Pilih tipe transaksi");
+            cmbKategori.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(cmbKategori, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            inputPanel.add(new JLabel("Frekuensi: "), gbc);
+            gbc.gridx++;
             cmbFrekuensi = new JComboBox<>(new String[]{"Harian", "Mingguan", "Bulanan"});
-            cmbFrekuensi.setToolTipText("Pilih frekuensi transaksi");
+            cmbFrekuensi.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(cmbFrekuensi, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            gbc.gridwidth = 2;
+            gbc.anchor = GridBagConstraints.CENTER;
             btnTambah = new JButton("Tambah Transaksi");
-            btnTambah.setToolTipText("Klik untuk menambahkan transaksi berulang");
+            btnTambah.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            btnTambah.setBackground(new Color(218, 165, 32));
+            btnTambah.setForeground(Color.WHITE);
+            btnTambah.setFocusPainted(false);
+            btnTambah.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            inputPanel.add(btnTambah, gbc);
 
-            inputPanel.add(new JLabel("Jumlah:"));
-            inputPanel.add(txtJumlah);
-            inputPanel.add(new JLabel("Tipe:"));
-            inputPanel.add(cmbKategori);
-            inputPanel.add(new JLabel("Frekuensi:"));
-            inputPanel.add(cmbFrekuensi);
-            inputPanel.add(btnTambah);
+            // Tambahkan Efek Hover pada Tombol
+            btnTambah.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    btnTambah.setBackground(new Color(238, 232, 170));
+                }
 
-            model = new DefaultTableModel(new Object[]{"Jumlah","Tipe","Frekuensi"},0);
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    btnTambah.setBackground(new Color(218, 165, 32));
+                }
+            });
+
+            // Panel Daftar Transaksi Berulang
+            model = new DefaultTableModel(new Object[]{"Jumlah", "Tipe", "Frekuensi"}, 0);
             tblTransaksiBerulang = new JTable(model);
-
+            tblTransaksiBerulang.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            tblTransaksiBerulang.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
             JScrollPane scroll = new JScrollPane(tblTransaksiBerulang);
-            scroll.setBorder(new TitledBorder(new EtchedBorder(), "Daftar Transaksi Berulang"));
+            scroll.setBorder(new TitledBorder(new LineBorder(new Color(218, 165, 32), 2), "Daftar Transaksi Berulang", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(218, 165, 32)));
 
             add(inputPanel, BorderLayout.NORTH);
             add(scroll, BorderLayout.CENTER);
 
+            // Action Listener untuk Tombol Tambah
             btnTambah.addActionListener(e -> {
                 try {
                     double jumlah = Double.parseDouble(txtJumlah.getText());
                     if (jumlah <= 0) throw new NumberFormatException();
                     String tipe = (String) cmbKategori.getSelectedItem();
                     String freq = (String) cmbFrekuensi.getSelectedItem();
-                    model.addRow(new Object[]{jumlah, tipe, freq});
+                    model.addRow(new Object[]{String.format("Rp %.2f", jumlah), tipe, freq});
                     txtJumlah.setText("");
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(TransaksiBerulangPanel.this,
@@ -458,12 +677,12 @@ public class TabuaRasa {
                 }
             });
         }
-    }*/
+    }
 
     // -----------------------------------------------------
     // PANEL KALKULATOR
     // -----------------------------------------------------
-    /*static class KalkulatorPanel extends JPanel {
+    static class KalkulatorPanel extends JPanel {
         private JTextField txtPendapatan;
         private JTextField txtPengeluaran;
         private JTextField txtInvestasi;
@@ -473,40 +692,96 @@ public class TabuaRasa {
 
         public KalkulatorPanel() {
             setLayout(new BorderLayout());
-            setBorder(new EmptyBorder(20,20,20,20));
+            setBackground(new Color(255, 228, 196));
+            setBorder(new EmptyBorder(30, 30, 30, 30));
 
-            JPanel inputPanel = new JPanel(new GridLayout(4,2,10,10));
-            inputPanel.setBorder(new TitledBorder(new EtchedBorder(), "Input Data"));
+            // Panel Input Data
+            JPanel inputPanel = new JPanel(new GridBagLayout());
+            inputPanel.setOpaque(false);
+            inputPanel.setBorder(new TitledBorder(new LineBorder(new Color(255, 140, 0), 2), "Input Data", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(255, 140, 0)));
 
-            txtPendapatan = new JTextField();
-            txtPendapatan.setToolTipText("Masukkan total pendapatan");
-            txtPengeluaran = new JTextField();
-            txtPengeluaran.setToolTipText("Masukkan total pengeluaran");
-            txtInvestasi = new JTextField();
-            txtInvestasi.setToolTipText("Masukkan total investasi");
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.anchor = GridBagConstraints.EAST;
+
+            inputPanel.add(new JLabel("Total Pendapatan: "), gbc);
+            gbc.gridx++;
+            txtPendapatan = new JTextField(15);
+            txtPendapatan.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(txtPendapatan, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            inputPanel.add(new JLabel("Total Pengeluaran: "), gbc);
+            gbc.gridx++;
+            txtPengeluaran = new JTextField(15);
+            txtPengeluaran.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(txtPengeluaran, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            inputPanel.add(new JLabel("Total Investasi: "), gbc);
+            gbc.gridx++;
+            txtInvestasi = new JTextField(15);
+            txtInvestasi.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            inputPanel.add(txtInvestasi, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            gbc.gridwidth = 2;
+            gbc.anchor = GridBagConstraints.CENTER;
             btnHitung = new JButton("Hitung");
+            btnHitung.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            btnHitung.setBackground(new Color(255, 140, 0));
+            btnHitung.setForeground(Color.WHITE);
+            btnHitung.setFocusPainted(false);
+            btnHitung.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            inputPanel.add(btnHitung, gbc);
 
-            inputPanel.add(new JLabel("Total Pendapatan:"));
-            inputPanel.add(txtPendapatan);
-            inputPanel.add(new JLabel("Total Pengeluaran:"));
-            inputPanel.add(txtPengeluaran);
-            inputPanel.add(new JLabel("Total Investasi:"));
-            inputPanel.add(txtInvestasi);
-            inputPanel.add(new JLabel(""));
-            inputPanel.add(btnHitung);
+            // Tambahkan Efek Hover pada Tombol
+            btnHitung.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    btnHitung.setBackground(new Color(255, 165, 0));
+                }
 
-            JPanel outputPanel = new JPanel(new GridLayout(2,2,10,10));
-            outputPanel.setBorder(new TitledBorder(new EtchedBorder(), "Hasil"));
-            lblHasilRasio = new JLabel("Rasio: ");
-            lblHasilBunga = new JLabel("Hasil Bunga: ");
-            outputPanel.add(new JLabel("Rasio Tabungan/Pengeluaran/Investasi:"));
-            outputPanel.add(lblHasilRasio);
-            outputPanel.add(new JLabel("Perhitungan Bunga:"));
-            outputPanel.add(lblHasilBunga);
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    btnHitung.setBackground(new Color(255, 140, 0));
+                }
+            });
+
+            // Panel Output Hasil
+            JPanel outputPanel = new JPanel(new GridBagLayout());
+            outputPanel.setOpaque(false);
+            outputPanel.setBorder(new TitledBorder(new LineBorder(new Color(255, 140, 0), 2), "Hasil", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(255, 140, 0)));
+
+            gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.anchor = GridBagConstraints.EAST;
+
+            outputPanel.add(new JLabel("Rasio Tabungan/Pengeluaran/Investasi: "), gbc);
+            gbc.gridx++;
+            lblHasilRasio = new JLabel("Tabungan: Rp 0, Investasi: Rp 0");
+            lblHasilRasio.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            outputPanel.add(lblHasilRasio, gbc);
+
+            gbc.gridx = 0;
+            gbc.gridy++;
+            outputPanel.add(new JLabel("Perhitungan Bunga: "), gbc);
+            gbc.gridx++;
+            lblHasilBunga = new JLabel("Bunga (5%): Rp 0");
+            lblHasilBunga.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            outputPanel.add(lblHasilBunga, gbc);
 
             add(inputPanel, BorderLayout.NORTH);
             add(outputPanel, BorderLayout.CENTER);
 
+            // Action Listener untuk Tombol Hitung
             btnHitung.addActionListener(e -> {
                 try {
                     double pendapatan = Double.parseDouble(txtPendapatan.getText());
@@ -514,18 +789,18 @@ public class TabuaRasa {
                     double investasi = Double.parseDouble(txtInvestasi.getText());
 
                     double tabungan = pendapatan - pengeluaran - investasi;
-                    lblHasilRasio.setText("Tabungan: " + tabungan + ", Investasi: " + investasi);
+                    lblHasilRasio.setText(String.format("Tabungan: Rp %.2f, Investasi: Rp %.2f", tabungan, investasi));
 
                     // Contoh kalkulasi bunga sederhana
                     double bunga = tabungan * 0.05; // misal bunga 5%
-                    lblHasilBunga.setText("Bunga (5%): " + bunga);
+                    lblHasilBunga.setText(String.format("Bunga (5%%): Rp %.2f", bunga));
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(KalkulatorPanel.this,
                             "Masukkan angka yang valid", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             });
         }
-    }*/
+    }
 
     // -----------------------------------------------------
     // PANEL PENGATURAN
@@ -540,40 +815,77 @@ public class TabuaRasa {
         public PengaturanPanel(JFrame parent) {
             this.parent = parent;
             setLayout(new BorderLayout());
-            setBorder(new EmptyBorder(20,20,20,20));
+            setBackground(new Color(240, 255, 255));
+            setBorder(new EmptyBorder(30, 30, 30, 30));
 
+            // Panel Pengaturan
             JPanel settingPanel = new JPanel(new GridBagLayout());
-            settingPanel.setBorder(new TitledBorder(new EtchedBorder(), "Pengaturan"));
+            settingPanel.setOpaque(false);
+            settingPanel.setBorder(new TitledBorder(new LineBorder(new Color(70, 130, 180), 2), "Pengaturan", TitledBorder.CENTER, TitledBorder.TOP, new Font("Segoe UI", Font.BOLD, 16), new Color(70, 130, 180)));
+
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.insets = new Insets(5,5,5,5);
+            gbc.insets = new Insets(15, 15, 15, 15);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
 
+            // Tema
+            settingPanel.add(new JLabel("Tema:"), gbc);
+            gbc.gridx++;
             cmbTema = new JComboBox<>(new String[]{"Terang", "Gelap"});
+            cmbTema.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            settingPanel.add(cmbTema, gbc);
+
+            // Pengingat Tagihan (Placeholder)
+            gbc.gridx = 0;
+            gbc.gridy++;
+            settingPanel.add(new JLabel("Pengingat Tagihan:"), gbc);
+            gbc.gridx++;
+            lblReminder = new JLabel("Belum diimplementasi");
+            lblReminder.setFont(new Font("Segoe UI", Font.ITALIC, 16));
+            lblReminder.setForeground(new Color(220, 20, 60));
+            settingPanel.add(lblReminder, gbc);
+
+            // Backup Data
+            gbc.gridx = 0;
+            gbc.gridy++;
+            settingPanel.add(new JLabel("Backup Data:"), gbc);
+            gbc.gridx++;
             btnBackupData = new JButton("Backup Data");
-            btnBackupData.setToolTipText("Klik untuk memulai proses backup");
-            lblReminder = new JLabel("Reminder Tagihan: Belum diimplementasi");
+            btnBackupData.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            btnBackupData.setBackground(new Color(70, 130, 180));
+            btnBackupData.setForeground(Color.WHITE);
+            btnBackupData.setFocusPainted(false);
+            btnBackupData.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            settingPanel.add(btnBackupData, gbc);
+
+            // Tambahkan Efek Hover pada Tombol Backup
+            btnBackupData.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    btnBackupData.setBackground(new Color(100, 149, 237));
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    btnBackupData.setBackground(new Color(70, 130, 180));
+                }
+            });
+
+            // Progress Bar Backup Data
             backupProgressBar = new JProgressBar();
             backupProgressBar.setStringPainted(true);
             backupProgressBar.setVisible(false);
+            backupProgressBar.setForeground(new Color(70, 130, 180));
 
-            gbc.gridx = 0; gbc.gridy = 0;
-            settingPanel.add(new JLabel("Tema:"), gbc);
-            gbc.gridx = 1;
-            settingPanel.add(cmbTema, gbc);
-
-            gbc.gridx = 0; gbc.gridy = 1;
-            settingPanel.add(new JLabel("Pengingat Tagihan:"), gbc);
-            gbc.gridx = 1;
-            settingPanel.add(lblReminder, gbc);
-
-            gbc.gridx = 0; gbc.gridy = 2;
-            settingPanel.add(btnBackupData, gbc);
-
-            gbc.gridx = 1; gbc.gridy = 2;
+            gbc.gridx = 0;
+            gbc.gridy++;
+            gbc.gridwidth = 2;
             settingPanel.add(backupProgressBar, gbc);
 
-            add(settingPanel, BorderLayout.NORTH);
+            add(settingPanel, BorderLayout.CENTER);
 
+            // Action Listener untuk Pilihan Tema
             cmbTema.addActionListener(e -> {
                 String tema = (String) cmbTema.getSelectedItem();
                 if (tema.equals("Gelap")) {
@@ -596,9 +908,10 @@ public class TabuaRasa {
                 }
                 SwingUtilities.updateComponentTreeUI(parent);
                 parent.pack();
-                parent.setSize(1200,700);
+                parent.setSize(1300, 800);
             });
 
+            // Action Listener untuk Backup Data
             btnBackupData.addActionListener(e -> {
                 backupProgressBar.setVisible(true);
                 backupProgressBar.setIndeterminate(true);
@@ -630,6 +943,15 @@ public class TabuaRasa {
                 worker.execute();
             });
         }
+
+        // Utilitas untuk Mengatur LookAndFeel
+        private static void setLookAndFeel(String laf) {
+            try {
+                UIManager.setLookAndFeel(laf);
+            } catch(Exception e) {
+                // ignore, gunakan default
+            }
+        }
     }
 
     // -----------------------------------------------------
@@ -639,7 +961,7 @@ public class TabuaRasa {
         try {
             UIManager.setLookAndFeel(laf);
         } catch(Exception e) {
-            // ignore, use default
+            // ignore, gunakan default
         }
     }
 }
