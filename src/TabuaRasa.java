@@ -68,10 +68,10 @@ public class TabuaRasa {
         private DashboardPanel dashboardPanel;
         private PendapatanPanel pendapatanPanel;
         private PengeluaranPanel pengeluaranPanel;
-        private LaporanPanel laporanPanel;
+        //private LaporanPanel laporanPanel;
         private TabunganPanel tabunganPanel;
-        private TransaksiBerulangPanel transaksiBerulangPanel;
-        private KalkulatorPanel kalkulatorPanel;
+        //private TransaksiBerulangPanel transaksiBerulangPanel;
+        //private KalkulatorPanel kalkulatorPanel;
         private PengaturanPanel pengaturanPanel;
 
         public MainFrame(AppModel model) {
