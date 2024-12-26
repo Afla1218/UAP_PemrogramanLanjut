@@ -403,7 +403,7 @@ public class TabuaRasa {
     // -----------------------------------------------------
     // PANEL TRANSAKSI BERULANG
     // -----------------------------------------------------
-    static class TransaksiBerulangPanel extends JPanel {
+    /*static class TransaksiBerulangPanel extends JPanel {
         private JTextField txtJumlah;
         private JComboBox<String> cmbKategori;
         private JComboBox<String> cmbFrekuensi;
@@ -458,7 +458,7 @@ public class TabuaRasa {
                 }
             });
         }
-    }
+    }*/
 
     // -----------------------------------------------------
     // PANEL KALKULATOR
