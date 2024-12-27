@@ -6,6 +6,7 @@ import org.example.model.Pengeluaran;
 import org.example.ui.HomePanel;
 import org.example.ui.PemasukanPanel;
 import org.example.ui.PengeluaranPanel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
@@ -17,12 +18,9 @@ import java.util.List;
  * dan melihat total uang yang dimiliki. Data disimpan dan dimuat menggunakan
  * kelas WordHandler untuk memastikan persistensi.
  *
- * @author Afllah Abdi Pratomo (NIM: 202310370311198)
- * @author Ahmad Nizar Rusdiawan (NIM: 202310370311186)
  * @version 1.0
  * @since 2024-12-22
  */
-
 public class PengelolaKeuangan extends JFrame {
     private CardLayout cardLayout;
     private JPanel mainPanel;
@@ -31,6 +29,11 @@ public class PengelolaKeuangan extends JFrame {
     private double totalUang;
     private List<Pemasukan> pemasukanList;
     private List<Pengeluaran> pengeluaranList;
+
+    // Panels
+    private HomePanel homePanel;
+    private PemasukanPanel pemasukanPanel;
+    private PengeluaranPanel pengeluaranPanel;
 
     public PengelolaKeuangan() {
         setTitle("Pengelola Keuangan Pribadi");
@@ -43,47 +46,101 @@ public class PengelolaKeuangan extends JFrame {
         pemasukanList = WordHandler.loadPemasukan();
         pengeluaranList = WordHandler.loadPengeluaran();
 
-        // Initialize CardLayout
-        cardLayout = new CardLayout();
-        mainPanel = new JPanel(cardLayout);
+        // Initialize Panels
+        initializePanels();
 
+        // Initialize Split Pane
+        JSplitPane splitPane = createSplitPane();
+
+        add(splitPane);
+    }
+
+    private void initializePanels() {
         // Initialize Home Panel with Listeners
-        HomePanel homePanel = new HomePanel(totalUang,
+        homePanel = new HomePanel(totalUang,
+                e -> showHomePanel(),
                 e -> showPemasukanPanel(),
                 e -> showPengeluaranPanel());
-        mainPanel.add(homePanel, "Home");
 
         // Initialize Pemasukan Panel
-        PemasukanPanel pemasukanPanel = new PemasukanPanel(totalUang, pemasukanList, homePanel.getTotalUangLabel(),
-                e -> cardLayout.show(mainPanel, "Home"));
-        mainPanel.add(pemasukanPanel, "Pemasukan");
+        pemasukanPanel = new PemasukanPanel(totalUang, pemasukanList, homePanel.getTotalUangLabel(),
+                e -> showHomePanel());
 
         // Initialize Pengeluaran Panel
-        PengeluaranPanel pengeluaranPanel = new PengeluaranPanel(totalUang, pengeluaranList, homePanel.getTotalUangLabel(),
-                e -> cardLayout.show(mainPanel, "Home"));
+        pengeluaranPanel = new PengeluaranPanel(totalUang, pengeluaranList, homePanel.getTotalUangLabel(),
+                e -> showHomePanel());
+    }
+
+    private JSplitPane createSplitPane() {
+        // Panel Kiri (Navigasi)
+        JPanel leftPanel = new JPanel();
+        leftPanel.setBackground(new Color(52, 152, 219)); // Warna biru
+        leftPanel.setLayout(new GridBagLayout());
+
+        // Tambahkan tombol navigasi
+        JPanel navButtonsPanel = new JPanel();
+        navButtonsPanel.setLayout(new GridLayout(3, 1, 10, 10));
+        navButtonsPanel.setOpaque(false); // Transparan agar warna latar kiri terlihat
+
+        JButton btnHome = new JButton("Home");
+        JButton btnPemasukan = new JButton("Pemasukan");
+        JButton btnPengeluaran = new JButton("Pengeluaran");
+
+        // Atur font dan warna tombol
+        Font buttonFont = new Font("Arial", Font.PLAIN, 16);
+        JButton[] buttons = {btnHome, btnPemasukan, btnPengeluaran};
+        for (JButton btn : buttons) {
+            btn.setFont(buttonFont);
+            btn.setForeground(Color.WHITE);
+            btn.setBackground(new Color(41, 128, 185));
+            btn.setFocusPainted(false);
+            btn.setPreferredSize(new Dimension(150, 50));
+        }
+
+        // Tambahkan ActionListener pada tombol
+        btnHome.addActionListener(e -> showHomePanel());
+        btnPemasukan.addActionListener(e -> showPemasukanPanel());
+        btnPengeluaran.addActionListener(e -> showPengeluaranPanel());
+
+        navButtonsPanel.add(btnHome);
+        navButtonsPanel.add(btnPemasukan);
+        navButtonsPanel.add(btnPengeluaran);
+
+        leftPanel.add(navButtonsPanel);
+
+        // Panel Kanan (Konten Utama)
+        mainPanel = new JPanel();
+        cardLayout = new CardLayout();
+        mainPanel.setLayout(cardLayout);
+
+        mainPanel.add(homePanel, "Home");
+        mainPanel.add(pemasukanPanel, "Pemasukan");
         mainPanel.add(pengeluaranPanel, "Pengeluaran");
 
-        add(mainPanel);
+        // Split Pane
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, mainPanel);
+        splitPane.setDividerSize(2); // Ukuran garis pembatas
+        splitPane.setDividerLocation(200); // Lebar panel kiri
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setContinuousLayout(true);
 
-        // Show Home Panel
+        return splitPane;
+    }
+
+    private void showHomePanel() {
+        homePanel.updateTotalUang(totalUang);
         cardLayout.show(mainPanel, "Home");
     }
 
     private void showPemasukanPanel() {
         pemasukanList = WordHandler.loadPemasukan();
-        PemasukanPanel pemasukanPanel = new PemasukanPanel(totalUang, pemasukanList, 
-                ((HomePanel) mainPanel.getComponent(0)).getTotalUangLabel(), 
-                e -> cardLayout.show(mainPanel, "Home"));
-        mainPanel.add(pemasukanPanel, "Pemasukan");
+        pemasukanPanel.updateData(totalUang, pemasukanList);
         cardLayout.show(mainPanel, "Pemasukan");
     }
 
     private void showPengeluaranPanel() {
         pengeluaranList = WordHandler.loadPengeluaran();
-        PengeluaranPanel pengeluaranPanel = new PengeluaranPanel(totalUang, pengeluaranList, 
-                ((HomePanel) mainPanel.getComponent(0)).getTotalUangLabel(), 
-                e -> cardLayout.show(mainPanel, "Home"));
-        mainPanel.add(pengeluaranPanel, "Pengeluaran");
+        pengeluaranPanel.updateData(totalUang, pengeluaranList);
         cardLayout.show(mainPanel, "Pengeluaran");
     }
 
