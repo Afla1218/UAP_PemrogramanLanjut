@@ -5,15 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1e88bde6-68cd-49d3-b2f9-fb7cc7d9a10e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_12_20_2024_7_47_PM__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_12_20_2024_7_47_PM__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RiwayatPemasukan.docx" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/RiwayatPengeluaran.docx" beforeDir="false" afterPath="$PROJECT_DIR$/RiwayatPengeluaran.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TotalUang.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/data/WordHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/data/WordHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/ui/PengeluaranPanel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/ui/PengeluaranPanel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/unittest/WordHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/unittest/WordHandlerTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,7 +45,7 @@
     "JUnit.WordHandlerTest.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Rencana-Konten",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/okaya/Downloads/git/UAP_PemrogramanLanjut",
     "onboarding.tips.debug.path": "C:/Users/okaya/Downloads/Documents/Proglan-Modul6/Tabua-Rasa-v03/src/main/java/org/example/Main.java",
@@ -59,7 +54,7 @@
     "project.structure.side.proportion": "0.2"
   }
 }]]></component>
-  <component name="RunManager" selected="Application.PengelolaKeuangan">
+  <component name="RunManager" selected="JUnit.WordHandlerTest">
     <configuration name="PengelolaKeuangan" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.example.PengelolaKeuangan" />
       <module name="Tabua-Rasa-v03" />
