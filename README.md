@@ -1,6 +1,7 @@
-# Pengelola Keuangan Pribadi
 
-**Pengelola Keuangan Pribadi** adalah aplikasi desktop berbasis Java yang dirancang untuk membantu pengguna mengelola pemasukan dan pengeluaran mereka secara efisien. Aplikasi ini menggunakan antarmuka pengguna grafis (GUI) dengan Java Swing dan menyimpan data ke dalam dokumen Word menggunakan Apache POI. Selain itu, aplikasi ini mendukung penyisipan bukti pengeluaran berupa gambar.
+# "TabuaRasa" Program Sederhana Pengelola Keuangan Pribadi
+
+**TabuaRasa** adalah program desktop berbasis Java yang dirancang untuk membantu pengguna mengelola pemasukan dan pengeluaran mereka secara efisien. Aplikasi ini menggunakan antarmuka pengguna grafis (GUI) dengan Java Swing dan menyimpan data ke dalam dokumen Word menggunakan Apache POI. Selain itu, aplikasi ini mendukung penyisipan bukti pengeluaran berupa gambar.
 
 ## 📋 Fitur
 
@@ -168,9 +169,11 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## ✍️ Penulis
 
-- **Nama**: Tabuarasa
-- **Email**: tabuarasa@example.com
-- **GitHub**: [@tabuarasa](https://github.com/tabuarasa)
+- **Nama**: Nizar & Aflla
+- **Email**: 
+- ahmad_nizar@webmail.umm.ac.id
+- afllahinformatika@webmail.umm.ac.id
+- **GitHub**: [@Afla1218](https://github.com/tabuaras) & [@2023-Nizar-186](https://github.com/tabuaras)
 
 ## 📷 Screenshot
 
@@ -196,4 +199,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 - [Apache POI Documentation](https://poi.apache.org/)
 - [Java Swing Tutorial](https://docs.oracle.com/javase/tutorial/uiswing/)
-```
+
