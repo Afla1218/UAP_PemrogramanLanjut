@@ -15,10 +15,10 @@ public class WordHandler {
     public static final String TOTAL_UANG_FILE = "TotalUang.docx";
     public static final String PEMASUKAN_FILE = "RiwayatPemasukan.docx";
     public static final String PENGELUARAN_FILE = "RiwayatPengeluaran.docx";
-    public static final String BUKTI_DIR = "bukti_pengeluaran"; // pastikan folder ini ada
+    public static final String BUKTI_DIR = "bukti_pengeluaran"; // Ensure this folder exists
 
     public WordHandler(String string, String string1, String string2, String string3) {
-
+        // Constructor can be expanded if needed
     }
 
     // ----------------------------
@@ -26,7 +26,7 @@ public class WordHandler {
     // ----------------------------
 
     public static void saveTotalUang(double total) throws IOException {
-        // Overwrite file: buat doc baru
+        // Overwrite file: create new doc
         XWPFDocument document = new XWPFDocument();
         XWPFParagraph paragraph = document.createParagraph();
         XWPFRun run = paragraph.createRun();
@@ -34,8 +34,13 @@ public class WordHandler {
 
         try (FileOutputStream out = new FileOutputStream(TOTAL_UANG_FILE)) {
             document.write(out);
+            System.out.println("Total uang saved successfully.");
+        } catch (IOException e) {
+            System.err.println("Error saving total uang: " + e.getMessage());
+            throw e;
+        } finally {
+            document.close();
         }
-        document.close();
     }
 
     public static double loadTotalUang() {
@@ -48,8 +53,10 @@ public class WordHandler {
                 if (paragraph != null) {
                     try {
                         total = Double.parseDouble(paragraph.getText());
+                        System.out.println("Total uang loaded: " + total);
                     } catch (NumberFormatException e) {
-                        // file korup: biarkan total = 0.0
+                        // File corrupted: leave total = 0.0
+                        System.err.println("Invalid number format in total uang file.");
                     }
                 }
             } catch (Exception e) {
@@ -58,6 +65,8 @@ public class WordHandler {
                         "Error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
+        } else {
+            System.out.println("Total uang file does not exist. Returning default value 0.0.");
         }
         return total;
     }
@@ -78,18 +87,23 @@ public class WordHandler {
         header.addNewTableCell().setText("Deskripsi");
         header.addNewTableCell().setText("Tanggal");
 
-        // Baris data
+        // Data row
         XWPFTableRow row = table.createRow();
         row.getCell(0).setText(String.valueOf(pemasukan.getId()));
         row.getCell(1).setText(String.format("%.2f", pemasukan.getJumlah()));
         row.getCell(2).setText(pemasukan.getDeskripsi());
         row.getCell(3).setText(pemasukan.getTanggal());
 
-        // Tulis ke file
+        // Write to file
         try (FileOutputStream out = new FileOutputStream(PEMASUKAN_FILE)) {
             document.write(out);
+            System.out.println("Pemasukan saved successfully.");
+        } catch (IOException e) {
+            System.err.println("Error saving pemasukan: " + e.getMessage());
+            throw e;
+        } finally {
+            document.close();
         }
-        document.close();
     }
 
     public static List<Pemasukan> loadPemasukan() {
@@ -102,7 +116,7 @@ public class WordHandler {
                 List<XWPFTable> tables = document.getTables();
                 if (!tables.isEmpty()) {
                     XWPFTable table = tables.get(0);
-                    // baris ke-0 header, mulai parse dr baris ke-1
+                    // Skip header row (index 0), start from row 1
                     for (int i = 1; i < table.getNumberOfRows(); i++) {
                         XWPFTableRow row = table.getRow(i);
                         Pemasukan pm = new Pemasukan();
@@ -112,6 +126,7 @@ public class WordHandler {
                         pm.setTanggal(row.getCell(3).getText());
                         list.add(pm);
                     }
+                    System.out.println("Pemasukan loaded successfully. Total records: " + list.size());
                 }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,
@@ -119,11 +134,13 @@ public class WordHandler {
                         "Error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
+        } else {
+            System.out.println("Pemasukan file does not exist. Returning empty list.");
         }
         return list;
     }
 
-    // Overwrite file dengan list pemasukan
+    // Overwrite file with list of pemasukan
     public static void savePemasukanList(List<Pemasukan> list) throws IOException {
         XWPFDocument document = new XWPFDocument();
         XWPFTable table = document.createTable();
@@ -146,8 +163,13 @@ public class WordHandler {
 
         try (FileOutputStream out = new FileOutputStream(PEMASUKAN_FILE)) {
             document.write(out);
+            System.out.println("Pemasukan list saved successfully.");
+        } catch (IOException e) {
+            System.err.println("Error saving pemasukan list: " + e.getMessage());
+            throw e;
+        } finally {
+            document.close();
         }
-        document.close();
     }
 
     // ----------------------------
@@ -155,6 +177,17 @@ public class WordHandler {
     // ----------------------------
 
     public static void savePengeluaran(Pengeluaran pengeluaran) throws IOException {
+        // Ensure bukti_pengeluaran directory exists
+        File buktiDir = new File(BUKTI_DIR);
+        if (!buktiDir.exists()) {
+            if (buktiDir.mkdirs()) {
+                System.out.println("Created bukti_pengeluaran directory.");
+            } else {
+                System.err.println("Failed to create bukti_pengeluaran directory.");
+                throw new IOException("Failed to create bukti_pengeluaran directory.");
+            }
+        }
+
         // Overwrite file
         XWPFDocument document = new XWPFDocument();
         XWPFTable table = document.createTable();
@@ -167,24 +200,24 @@ public class WordHandler {
         header.addNewTableCell().setText("Tanggal");
         header.addNewTableCell().setText("Bukti");
 
-        // Baris data
+        // Data row
         XWPFTableRow row = table.createRow();
         row.getCell(0).setText(String.valueOf(pengeluaran.getId()));
         row.getCell(1).setText(String.format("%.2f", pengeluaran.getJumlah()));
         row.getCell(2).setText(pengeluaran.getDeskripsi());
         row.getCell(3).setText(pengeluaran.getTanggal());
 
-        // Kolom “Bukti”
+        // Bukti cell
         XWPFTableCell cellBukti = row.getCell(4);
         if (pengeluaran.getBukti() != null && !pengeluaran.getBukti().isEmpty()) {
             cellBukti.removeParagraph(0);
 
             XWPFParagraph para = cellBukti.addParagraph();
             XWPFRun run = para.createRun();
-            // Tulis nama file bukti agar bisa terbaca di load
+            // Write the bukti filename
             run.setText(pengeluaran.getBukti());
 
-            // Sisipkan gambar
+            // Insert image
             String imagePath = BUKTI_DIR + "/" + pengeluaran.getBukti();
             File imgFile = new File(imagePath);
             if (imgFile.exists()) {
@@ -193,24 +226,34 @@ public class WordHandler {
                     if (imgFormat != -1) {
                         run.addPicture(is, imgFormat, imgFile.getName(),
                                 Units.toEMU(100), Units.toEMU(100));
+                        System.out.println("Inserted image: " + imagePath);
                     } else {
                         cellBukti.setText("Format gambar tidak didukung.");
+                        System.err.println("Unsupported image format for file: " + imagePath);
                     }
                 } catch (Exception ex) {
                     cellBukti.setText("Gagal menyisipkan gambar.");
+                    System.err.println("Error inserting image: " + ex.getMessage());
                     ex.printStackTrace();
                 }
             } else {
                 cellBukti.setText("Bukti tidak ditemukan.");
+                System.err.println("Image file not found: " + imagePath);
             }
         } else {
             cellBukti.setText("Tidak ada bukti.");
+            System.out.println("No bukti provided for pengeluaran.");
         }
 
         try (FileOutputStream out = new FileOutputStream(PENGELUARAN_FILE)) {
             document.write(out);
+            System.out.println("Pengeluaran saved successfully.");
+        } catch (IOException e) {
+            System.err.println("Error saving pengeluaran: " + e.getMessage());
+            throw e;
+        } finally {
+            document.close();
         }
-        document.close();
     }
 
     public static List<Pengeluaran> loadPengeluaran() {
@@ -223,7 +266,7 @@ public class WordHandler {
                 List<XWPFTable> tables = document.getTables();
                 if (!tables.isEmpty()) {
                     XWPFTable table = tables.get(0);
-                    // row 0 header, mulai dr row 1
+                    // Skip header row (index 0), start from row 1
                     for (int i = 1; i < table.getNumberOfRows(); i++) {
                         XWPFTableRow row = table.getRow(i);
                         Pengeluaran p = new Pengeluaran();
@@ -232,20 +275,23 @@ public class WordHandler {
                         p.setDeskripsi(row.getCell(2).getText());
                         p.setTanggal(row.getCell(3).getText());
 
-                        // Kolom Bukti
+                        // Handle bukti
                         XWPFTableCell cellBukti = row.getCell(4);
                         String buktiText = cellBukti.getText();
-                        // Jika berisi keterangan error => set kosong
+                        // Check for error messages
                         if (buktiText.contains("tidak ditemukan")
                                 || buktiText.contains("Format gambar")
                                 || buktiText.contains("Gagal")
                                 || buktiText.equals("Tidak ada bukti.")) {
                             p.setBukti("");
+                            System.out.println("Bukti not found or invalid for pengeluaran ID: " + p.getId());
                         } else {
-                            p.setBukti(buktiText); // misal "electronics.png"
+                            p.setBukti(buktiText.trim()); // e.g., "electronics.png"
+                            System.out.println("Bukti loaded: " + p.getBukti() + " for pengeluaran ID: " + p.getId());
                         }
                         list.add(p);
                     }
+                    System.out.println("Pengeluaran loaded successfully. Total records: " + list.size());
                 }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null,
@@ -253,11 +299,24 @@ public class WordHandler {
                         "Error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
+        } else {
+            System.out.println("Pengeluaran file does not exist. Returning empty list.");
         }
         return list;
     }
 
     public static void savePengeluaranList(List<Pengeluaran> list) throws IOException {
+        // Ensure bukti_pengeluaran directory exists
+        File buktiDir = new File(BUKTI_DIR);
+        if (!buktiDir.exists()) {
+            if (buktiDir.mkdirs()) {
+                System.out.println("Created bukti_pengeluaran directory.");
+            } else {
+                System.err.println("Failed to create bukti_pengeluaran directory.");
+                throw new IOException("Failed to create bukti_pengeluaran directory.");
+            }
+        }
+
         // Overwrite file
         XWPFDocument document = new XWPFDocument();
         XWPFTable table = document.createTable();
@@ -285,7 +344,7 @@ public class WordHandler {
             XWPFRun run = para.createRun();
 
             if (p.getBukti() != null && !p.getBukti().isEmpty()) {
-                // Tulis nama file
+                // Write bukti filename
                 run.setText(p.getBukti());
 
                 String imagePath = BUKTI_DIR + "/" + p.getBukti();
@@ -296,25 +355,35 @@ public class WordHandler {
                         if (imgFormat != -1) {
                             run.addPicture(is, imgFormat, imgFile.getName(),
                                     Units.toEMU(100), Units.toEMU(100));
+                            System.out.println("Inserted image: " + imagePath);
                         } else {
                             cellBukti.setText("Format gambar tidak didukung.");
+                            System.err.println("Unsupported image format for file: " + imagePath);
                         }
                     } catch (Exception ex) {
                         cellBukti.setText("Gagal menyisipkan gambar.");
+                        System.err.println("Error inserting image: " + ex.getMessage());
                         ex.printStackTrace();
                     }
                 } else {
                     cellBukti.setText("Bukti tidak ditemukan.");
+                    System.err.println("Image file not found: " + imagePath);
                 }
             } else {
                 cellBukti.setText("Tidak ada bukti.");
+                System.out.println("No bukti provided for pengeluaran.");
             }
         }
 
         try (FileOutputStream out = new FileOutputStream(PENGELUARAN_FILE)) {
             document.write(out);
+            System.out.println("Pengeluaran list saved successfully.");
+        } catch (IOException e) {
+            System.err.println("Error saving pengeluaran list: " + e.getMessage());
+            throw e;
+        } finally {
+            document.close();
         }
-        document.close();
     }
 
     // ----------------------------

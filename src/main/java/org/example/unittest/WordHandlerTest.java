@@ -137,14 +137,12 @@ public class WordHandlerTest {
         pengeluaran.setJumlah(150.00);
         pengeluaran.setDeskripsi("Beli alat tulis");
         pengeluaran.setTanggal("2024-12-03");
-        pengeluaran.setBukti("bukti.png"); // Asumsi ada file bukti.png di bukti_pengeluaran
+        pengeluaran.setBukti("gbw.jpg");
 
         // Buat file bukti sementara
-        Path buktiPath = buktiDirPath.resolve("bukti.png");
+        Path buktiPath = buktiDirPath.resolve("gbw.jpg");
         try {
             Files.createFile(buktiPath);
-            // (Optional) Tulis beberapa data ke file bukti jika diperlukan
-            // Misalnya, tulis byte dummy
             Files.write(buktiPath, new byte[]{0, 1, 2, 3, 4});
         } catch (IOException e) {
             fail("Gagal membuat file bukti sementara: " + e.getMessage());
@@ -226,11 +224,11 @@ public class WordHandlerTest {
         p2.setJumlah(450.75);
         p2.setDeskripsi("Beli elektronik");
         p2.setTanggal("2024-12-10");
-        p2.setBukti("electronics.png"); // Asumsi ada file electronics.png di bukti_pengeluaran
+        p2.setBukti("gbw.jpg");
         pengeluaranList.add(p2);
 
         // Buat file bukti sementara untuk p2
-        Path buktiPath = buktiDirPath.resolve("electronics.png");
+        Path buktiPath = buktiDirPath.resolve("gbw.jpg");
         try {
             Files.createFile(buktiPath);
             // (Optional) Tulis beberapa data ke file bukti jika diperlukan
@@ -255,7 +253,6 @@ public class WordHandlerTest {
         } catch (IOException e) {
             fail("IOException terjadi saat menyimpan atau memuat daftar pengeluaran: " + e.getMessage());
         } finally {
-            // Hapus file bukti sementara
             try {
                 Files.deleteIfExists(buktiPath);
             } catch (IOException e) {
