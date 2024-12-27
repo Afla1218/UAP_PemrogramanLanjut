@@ -6,10 +6,22 @@ import org.example.model.Pengeluaran;
 import org.example.ui.HomePanel;
 import org.example.ui.PemasukanPanel;
 import org.example.ui.PengeluaranPanel;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+
+/**
+ * PengelolaKeuangan
+ * Aplikasi pengelolaan keuangan pribadi berbasis GUI yang menggunakan Java Swing.
+ * Aplikasi ini memungkinkan pengguna untuk mengelola pemasukan, pengeluaran,
+ * dan melihat total uang yang dimiliki. Data disimpan dan dimuat menggunakan
+ * kelas WordHandler untuk memastikan persistensi.
+ *
+ * @author Afllah Abdi Pratomo (NIM: 202310370311198)
+ * @author Ahmad Nizar Rusdiawan (NIM: 202310370311186)
+ * @version 1.0
+ * @since 2024-12-22
+ */
 
 public class PengelolaKeuangan extends JFrame {
     private CardLayout cardLayout;
