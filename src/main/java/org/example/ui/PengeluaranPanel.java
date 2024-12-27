@@ -7,6 +7,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -14,6 +16,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.Objects;
 
 public class PengeluaranPanel extends JPanel {
     private JTextField txtJumlah;
@@ -22,7 +26,6 @@ public class PengeluaranPanel extends JPanel {
     private JLabel lblGambar;
     private JButton btnSimpan;
     private JButton btnReset;
-    private JButton btnKembali;
     private JButton btnEdit;
     private JButton btnUpdate;
     private JTable table;
@@ -30,8 +33,12 @@ public class PengeluaranPanel extends JPanel {
     private JLabel lblTotalUang;
     private File selectedImage;
     private Pengeluaran pengeluaranDiedit = null; // Untuk menyimpan entri yang sedang diedit
+    private double totalUang;
+    private List<Pengeluaran> pengeluaranList;
 
-    public PengeluaranPanel(double totalUang, List<Pengeluaran> pengeluaranList, JLabel lblTotalUangLabel, ActionListener kembaliListener) {
+    public PengeluaranPanel(double initialTotalUang, List<Pengeluaran> initialPengeluaranList, JLabel lblTotalUangLabel, ActionListener kembaliListener) {
+        this.totalUang = initialTotalUang;
+        this.pengeluaranList = initialPengeluaranList;
         this.lblTotalUang = lblTotalUangLabel;
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -40,9 +47,10 @@ public class PengeluaranPanel extends JPanel {
         lblTitle.setFont(new Font("Arial", Font.BOLD, 26));
         add(lblTitle, BorderLayout.NORTH);
 
-        // Split Pane
+        // Split Pane Vertikal: Form dan Riwayat
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setResizeWeight(0.5);
+        splitPane.setDividerSize(2); // Ukuran pembatas
 
         // Form Panel
         JPanel formPanel = new JPanel(new GridBagLayout());
@@ -102,7 +110,7 @@ public class PengeluaranPanel extends JPanel {
         gambarPanel.add(lblGambar);
         formPanel.add(gambarPanel, gbc);
 
-        // Buttons
+        // Buttons Panel
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         btnSimpan = new JButton("Simpan");
         btnSimpan.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -144,25 +152,43 @@ public class PengeluaranPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
         historyPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Kembali Button
-        JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        btnKembali = new JButton("Kembali");
-        btnKembali.setFont(new Font("Arial", Font.PLAIN, 16));
-        btnKembali.addActionListener(kembaliListener);
-        backPanel.add(btnKembali);
-        historyPanel.add(backPanel, BorderLayout.SOUTH);
-
         // Add Selection Listener untuk Tombol Edit
-        table.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) {
-                btnEdit.setEnabled(true);
-            } else {
-                btnEdit.setEnabled(false);
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) {
+                    btnEdit.setEnabled(true);
+                } else {
+                    btnEdit.setEnabled(false);
+                }
             }
         });
 
         // Tombol Edit Action
-        btnEdit.addActionListener(this::actionPerformed);
+        btnEdit.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow != -1) {
+                long id = (Long) tableModel.getValueAt(selectedRow, 0);
+                Optional<Pengeluaran> optionalPengeluaran = pengeluaranList.stream().filter(p -> p.getId() == id).findFirst();
+                if (optionalPengeluaran.isPresent()) {
+                    pengeluaranDiedit = optionalPengeluaran.get();
+                    // Mengisi form dengan data pengeluaran yang dipilih
+                    txtJumlah.setText(String.valueOf(pengeluaranDiedit.getJumlah()));
+                    txtDeskripsi.setText(pengeluaranDiedit.getDeskripsi());
+                    if (pengeluaranDiedit.getBukti() != null && !pengeluaranDiedit.getBukti().isEmpty()) {
+                        selectedImage = new File(WordHandler.BUKTI_DIR, pengeluaranDiedit.getBukti());
+                        lblGambar.setText(selectedImage.getName());
+                    } else {
+                        selectedImage = null;
+                        lblGambar.setText("Tidak ada gambar dipilih.");
+                    }
+                    // Ubah UI ke mode edit
+                    btnSimpan.setVisible(false);
+                    btnUpdate.setVisible(true);
+                    btnEdit.setEnabled(false);
+                    table.clearSelection();
+                }
+            }
+        });
 
         // Add Double Click Listener for Deletion
         table.addMouseListener(new MouseAdapter() {
@@ -173,27 +199,7 @@ public class PengeluaranPanel extends JPanel {
                         long id = (Long) tableModel.getValueAt(rowSelected, 0);
                         int confirm = JOptionPane.showConfirmDialog(PengeluaranPanel.this, "Apakah Anda yakin ingin menghapus entri ini?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
                         if (confirm == JOptionPane.YES_OPTION) {
-                            try {
-                                List<Pengeluaran> updatedList = WordHandler.loadPengeluaran();
-                                Pengeluaran pToRemove = updatedList.stream().filter(p -> p.getId() == id).findFirst().orElse(null);
-                                if (pToRemove != null) {
-                                    // Update total uang
-                                    double currentTotal = Double.parseDouble(lblTotalUang.getText().replaceAll("[^\\d.]", ""));
-                                    double newTotal = currentTotal + pToRemove.getJumlah();
-                                    WordHandler.saveTotalUang(newTotal);
-                                    // Remove pengeluaran
-                                    updatedList.remove(pToRemove);
-                                    WordHandler.savePengeluaranList(updatedList);
-                                    // Refresh table
-                                    populateTable(WordHandler.loadPengeluaran());
-                                    // Update label
-                                    lblTotalUang.setText("Total Uang: Rp " + String.format("%.2f", newTotal));
-                                    JOptionPane.showMessageDialog(PengeluaranPanel.this, "Entri berhasil dihapus.");
-                                }
-                            } catch (IOException ex) {
-                                JOptionPane.showMessageDialog(PengeluaranPanel.this, "Gagal menyimpan perubahan.", "Error", JOptionPane.ERROR_MESSAGE);
-                                ex.printStackTrace();
-                            }
+                            deletePengeluaranById(id);
                         }
                     }
                 }
@@ -205,208 +211,262 @@ public class PengeluaranPanel extends JPanel {
 
         // Tombol Simpan (Tambah)
         btnSimpan.addActionListener(e -> {
-            try {
-                double jumlah = Double.parseDouble(txtJumlah.getText().trim());
-                String deskripsi = txtDeskripsi.getText().trim();
-
-                if (jumlah <= 0) {
-                    JOptionPane.showMessageDialog(this, "Jumlah uang harus lebih besar dari 0.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                if (deskripsi.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Deskripsi tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                double currentTotal = Double.parseDouble(lblTotalUang.getText().replaceAll("[^\\d.]", ""));
-                if (jumlah > currentTotal) {
-                    JOptionPane.showMessageDialog(this, "Jumlah pengeluaran melebihi total uang.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                // Menyimpan bukti pengeluaran jika ada
-                String bukti = null;
-                if (selectedImage != null) {
-                    bukti = selectedImage.getName();
-                    // Menyalin gambar ke folder "bukti_pengeluaran"
-                    File destDir = new File(WordHandler.BUKTI_DIR);
-                    if (!destDir.exists()) destDir.mkdirs();
-                    File destFile = new File(destDir, bukti);
-                    try (FileInputStream fis = new FileInputStream(selectedImage);
-                         FileOutputStream fos = new FileOutputStream(destFile)) {
-                        byte[] buffer = new byte[1024];
-                        int len;
-                        while ((len = fis.read(buffer)) > 0) {
-                            fos.write(buffer, 0, len);
-                        }
-                    } catch (IOException exCopy) {
-                        JOptionPane.showMessageDialog(this, "Gagal menyimpan gambar bukti.", "Error", JOptionPane.ERROR_MESSAGE);
-                        exCopy.printStackTrace();
-                        return;
-                    }
-                }
-
-                Pengeluaran pengeluaran = new Pengeluaran(System.currentTimeMillis(), jumlah, deskripsi, new java.util.Date().toString(), bukti);
-                WordHandler.savePengeluaran(pengeluaran);
-                populateTable(WordHandler.loadPengeluaran());
-
-                // Update total uang
-                double newTotal = currentTotal - jumlah;
-                WordHandler.saveTotalUang(newTotal);
-                lblTotalUang.setText("Total Uang: Rp " + String.format("%.2f", newTotal));
-
-                JOptionPane.showMessageDialog(this, "Pengeluaran berhasil ditambahkan dan disimpan ke Word.");
-                txtJumlah.setText("");
-                txtDeskripsi.setText("");
-                selectedImage = null;
-                lblGambar.setText("Tidak ada gambar dipilih.");
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Jumlah uang harus berupa angka.", "Error", JOptionPane.ERROR_MESSAGE);
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Gagal menyimpan ke Word.", "Error", JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
-            }
+            tambahPengeluaran();
         });
 
         // Tombol Update (Edit)
         btnUpdate.addActionListener(e -> {
-            if (pengeluaranDiedit == null) {
-                JOptionPane.showMessageDialog(this, "Tidak ada pengeluaran yang sedang diedit.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            try {
-                double jumlahBaru = Double.parseDouble(txtJumlah.getText().trim());
-                String deskripsiBaru = txtDeskripsi.getText().trim();
-
-                if (jumlahBaru <= 0) {
-                    JOptionPane.showMessageDialog(this, "Jumlah uang harus lebih besar dari 0.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                if (deskripsiBaru.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Deskripsi tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                double currentTotal = Double.parseDouble(lblTotalUang.getText().replaceAll("[^\\d.]", ""));
-                // Hitung total setelah pembaruan: total saat ini + jumlah lama - jumlah baru
-                double updatedTotal = currentTotal + pengeluaranDiedit.getJumlah() - jumlahBaru;
-                if (updatedTotal < 0) {
-                    JOptionPane.showMessageDialog(this, "Jumlah pengeluaran melebihi total uang setelah pembaruan.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                // Menyimpan bukti pengeluaran jika ada
-                String buktiBaru = pengeluaranDiedit.getBukti();
-                if (selectedImage != null) {
-                    buktiBaru = selectedImage.getName();
-                    // Menyalin gambar ke folder "bukti_pengeluaran"
-                    File destDir = new File(WordHandler.BUKTI_DIR);
-                    if (!destDir.exists()) destDir.mkdirs();
-                    File destFile = new File(destDir, buktiBaru);
-                    try (FileInputStream fis = new FileInputStream(selectedImage);
-                         FileOutputStream fos = new FileOutputStream(destFile)) {
-                        byte[] buffer = new byte[1024];
-                        int len;
-                        while ((len = fis.read(buffer)) > 0) {
-                            fos.write(buffer, 0, len);
-                        }
-                    } catch (IOException exCopy) {
-                        JOptionPane.showMessageDialog(this, "Gagal menyimpan gambar bukti.", "Error", JOptionPane.ERROR_MESSAGE);
-                        exCopy.printStackTrace();
-                        return;
-                    }
-                }
-
-                // Membuat objek pengeluaran yang diperbarui
-                Pengeluaran pengeluaranBaru = new Pengeluaran(
-                        pengeluaranDiedit.getId(),
-                        jumlahBaru,
-                        deskripsiBaru,
-                        new java.util.Date().toString(),
-                        buktiBaru
-                );
-
-                // Memuat daftar pengeluaran, memperbarui entri, dan menyimpan kembali
-                List<Pengeluaran> list = WordHandler.loadPengeluaran();
-                int index = list.indexOf(pengeluaranDiedit);
-                if (index != -1) {
-                    list.set(index, pengeluaranBaru);
-                    WordHandler.savePengeluaranList(list);
-                    populateTable(WordHandler.loadPengeluaran());
-
-                    // Update total uang
-                    WordHandler.saveTotalUang(updatedTotal);
-                    lblTotalUang.setText("Total Uang: Rp " + String.format("%.2f", updatedTotal));
-
-                    JOptionPane.showMessageDialog(this, "Pengeluaran berhasil diperbarui.");
-
-                    // Reset form dan mode edit
-                    txtJumlah.setText("");
-                    txtDeskripsi.setText("");
-                    selectedImage = null;
-                    lblGambar.setText("Tidak ada gambar dipilih.");
-                    btnSimpan.setVisible(true);
-                    btnUpdate.setVisible(false);
-                    pengeluaranDiedit = null;
-                } else {
-                    JOptionPane.showMessageDialog(this, "Pengeluaran tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Jumlah uang harus berupa angka.", "Error", JOptionPane.ERROR_MESSAGE);
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Gagal memperbarui pengeluaran.", "Error", JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
-            }
+            updatePengeluaran();
         });
 
         // Tombol Reset
         btnReset.addActionListener(e -> {
-            txtJumlah.setText("");
-            txtDeskripsi.setText("");
-            selectedImage = null;
-            lblGambar.setText("Tidak ada gambar dipilih.");
-            // Jika dalam mode edit, batalkan mode edit
-            if (pengeluaranDiedit != null) {
-                btnSimpan.setVisible(true);
-                btnUpdate.setVisible(false);
-                pengeluaranDiedit = null;
-            }
+            resetForm();
         });
+
+        // Inisialisasi label total uang
+        updateTotalUangLabel();
     }
 
+    /**
+     * Menambahkan pengeluaran baru
+     */
+    private void tambahPengeluaran() {
+        try {
+            double jumlah = Double.parseDouble(txtJumlah.getText().trim());
+            String deskripsi = txtDeskripsi.getText().trim();
+
+            if (jumlah <= 0) {
+                JOptionPane.showMessageDialog(this, "Jumlah uang harus lebih besar dari 0.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (deskripsi.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Deskripsi tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (jumlah > totalUang) {
+                JOptionPane.showMessageDialog(this, "Jumlah pengeluaran melebihi total uang.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Menyimpan bukti pengeluaran jika ada
+            String bukti = null;
+            if (selectedImage != null) {
+                bukti = System.currentTimeMillis() + "_" + selectedImage.getName();
+                // Menyalin gambar ke folder "bukti_pengeluaran"
+                File destDir = new File(WordHandler.BUKTI_DIR);
+                if (!destDir.exists()) destDir.mkdirs();
+                File destFile = new File(destDir, bukti);
+                try (FileInputStream fis = new FileInputStream(selectedImage);
+                     FileOutputStream fos = new FileOutputStream(destFile)) {
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = fis.read(buffer)) > 0) {
+                        fos.write(buffer, 0, len);
+                    }
+                } catch (IOException exCopy) {
+                    JOptionPane.showMessageDialog(this, "Gagal menyimpan gambar bukti.", "Error", JOptionPane.ERROR_MESSAGE);
+                    exCopy.printStackTrace();
+                    return;
+                }
+            }
+
+            Pengeluaran pengeluaran = new Pengeluaran(System.currentTimeMillis(), jumlah, deskripsi, new java.util.Date().toString(), bukti);
+            pengeluaranList.add(pengeluaran);
+            totalUang -= jumlah;
+
+            // Simpan data
+            WordHandler.savePengeluaranList(pengeluaranList);
+            WordHandler.saveTotalUang(totalUang);
+
+            // Perbarui UI
+            populateTable(pengeluaranList);
+            updateTotalUangLabel();
+
+            JOptionPane.showMessageDialog(this, "Pengeluaran berhasil ditambahkan dan disimpan.");
+
+            // Reset form
+            resetForm();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Jumlah uang harus berupa angka.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Gagal menyimpan pengeluaran.", "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Memperbarui pengeluaran yang sedang diedit
+     */
+    private void updatePengeluaran() {
+        if (pengeluaranDiedit == null) {
+            JOptionPane.showMessageDialog(this, "Tidak ada pengeluaran yang sedang diedit.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            double jumlahBaru = Double.parseDouble(txtJumlah.getText().trim());
+            String deskripsiBaru = txtDeskripsi.getText().trim();
+
+            if (jumlahBaru <= 0) {
+                JOptionPane.showMessageDialog(this, "Jumlah uang harus lebih besar dari 0.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (deskripsiBaru.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Deskripsi tidak boleh kosong.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Hitung total setelah pembaruan: total saat ini + jumlah lama - jumlah baru
+            double updatedTotal = totalUang + pengeluaranDiedit.getJumlah() - jumlahBaru;
+            if (updatedTotal < 0) {
+                JOptionPane.showMessageDialog(this, "Jumlah pengeluaran melebihi total uang setelah pembaruan.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Menyimpan bukti pengeluaran jika ada
+            String buktiBaru = pengeluaranDiedit.getBukti();
+            if (selectedImage != null) {
+                buktiBaru = System.currentTimeMillis() + "_" + selectedImage.getName();
+                // Menyalin gambar ke folder "bukti_pengeluaran"
+                File destDir = new File(WordHandler.BUKTI_DIR);
+                if (!destDir.exists()) destDir.mkdirs();
+                File destFile = new File(destDir, buktiBaru);
+                try (FileInputStream fis = new FileInputStream(selectedImage);
+                     FileOutputStream fos = new FileOutputStream(destFile)) {
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = fis.read(buffer)) > 0) {
+                        fos.write(buffer, 0, len);
+                    }
+                } catch (IOException exCopy) {
+                    JOptionPane.showMessageDialog(this, "Gagal menyimpan gambar bukti.", "Error", JOptionPane.ERROR_MESSAGE);
+                    exCopy.printStackTrace();
+                    return;
+                }
+
+                // Menghapus gambar lama jika ada
+                if (pengeluaranDiedit.getBukti() != null && !pengeluaranDiedit.getBukti().isEmpty()) {
+                    File oldImage = new File(WordHandler.BUKTI_DIR, pengeluaranDiedit.getBukti());
+                    if (oldImage.exists()) {
+                        oldImage.delete();
+                    }
+                }
+            }
+
+            // Memperbarui objek pengeluaran
+            pengeluaranDiedit.setJumlah(jumlahBaru);
+            pengeluaranDiedit.setDeskripsi(deskripsiBaru);
+            pengeluaranDiedit.setTanggal(new java.util.Date().toString());
+            pengeluaranDiedit.setBukti(buktiBaru);
+
+            // Perbarui total uang
+            totalUang = updatedTotal;
+
+            // Simpan data
+            WordHandler.savePengeluaranList(pengeluaranList);
+            WordHandler.saveTotalUang(totalUang);
+
+            // Perbarui UI
+            populateTable(pengeluaranList);
+            updateTotalUangLabel();
+
+            JOptionPane.showMessageDialog(this, "Pengeluaran berhasil diperbarui.");
+
+            // Reset form dan mode edit
+            resetForm();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Jumlah uang harus berupa angka.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Gagal memperbarui pengeluaran.", "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Menghapus pengeluaran berdasarkan ID
+     * @param id ID pengeluaran yang akan dihapus
+     */
+    private void deletePengeluaranById(long id) {
+        try {
+            Optional<Pengeluaran> optionalPengeluaran = pengeluaranList.stream().filter(p -> p.getId() == id).findFirst();
+            if (optionalPengeluaran.isPresent()) {
+                Pengeluaran pToRemove = optionalPengeluaran.get();
+                pengeluaranList.remove(pToRemove);
+                totalUang += pToRemove.getJumlah();
+
+                // Menghapus gambar jika ada
+                if (pToRemove.getBukti() != null && !pToRemove.getBukti().isEmpty()) {
+                    File imageFile = new File(WordHandler.BUKTI_DIR, pToRemove.getBukti());
+                    if (imageFile.exists()) {
+                        imageFile.delete();
+                    }
+                }
+
+                // Simpan data
+                WordHandler.savePengeluaranList(pengeluaranList);
+                WordHandler.saveTotalUang(totalUang);
+
+                // Perbarui UI
+                populateTable(pengeluaranList);
+                updateTotalUangLabel();
+
+                JOptionPane.showMessageDialog(this, "Entri berhasil dihapus.");
+            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Gagal menyimpan perubahan.", "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Mengisi tabel dengan data pengeluaran
+     * @param list Daftar pengeluaran
+     */
     private void populateTable(List<Pengeluaran> list) {
         tableModel.setRowCount(0);
         for (Pengeluaran p : list) {
-            Object[] row = {p.getId(), p.getJumlah(), p.getDeskripsi(), p.getTanggal(), p.getBukti()};
+            Object[] row = {p.getId(), p.getJumlah(), p.getDeskripsi(), p.getTanggal(), p.getBukti() != null ? p.getBukti() : "Tidak ada"};
             tableModel.addRow(row);
         }
     }
 
-    private void actionPerformed(ActionEvent e) {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow != -1) {
-            long id = (Long) tableModel.getValueAt(selectedRow, 0);
-            List<Pengeluaran> list = WordHandler.loadPengeluaran();
-            pengeluaranDiedit = list.stream().filter(p -> p.getId() == id).findFirst().orElse(null);
-            if (pengeluaranDiedit != null) {
-                // Mengisi form dengan data pengeluaran yang dipilih
-                txtJumlah.setText(String.valueOf(pengeluaranDiedit.getJumlah()));
-                txtDeskripsi.setText(pengeluaranDiedit.getDeskripsi());
-                if (pengeluaranDiedit.getBukti() != null && !pengeluaranDiedit.getBukti().isEmpty()) {
-                    selectedImage = new File(WordHandler.BUKTI_DIR, pengeluaranDiedit.getBukti());
-                    lblGambar.setText(selectedImage.getName());
-                } else {
-                    selectedImage = null;
-                    lblGambar.setText("Tidak ada gambar dipilih.");
-                }
-                // Ubah UI ke mode edit
-                btnSimpan.setVisible(false);
-                btnUpdate.setVisible(true);
-                btnEdit.setEnabled(false);
-            }
+    /**
+     * Memperbarui label total uang
+     */
+    private void updateTotalUangLabel() {
+        lblTotalUang.setText("Total Uang: Rp " + String.format("%.2f", totalUang));
+    }
+
+    /**
+     * Mereset form input dan mode edit
+     */
+    private void resetForm() {
+        txtJumlah.setText("");
+        txtDeskripsi.setText("");
+        selectedImage = null;
+        lblGambar.setText("Tidak ada gambar dipilih.");
+        if (pengeluaranDiedit != null) {
+            pengeluaranDiedit = null;
+            btnSimpan.setVisible(true);
+            btnUpdate.setVisible(false);
         }
+    }
+
+    /**
+     * Memperbarui data panel secara keseluruhan
+     * @param totalUang Total uang terbaru
+     * @param pengeluaranList Daftar pengeluaran terbaru
+     */
+    public void updateData(double totalUang, List<Pengeluaran> pengeluaranList) {
+        this.totalUang = totalUang;
+        this.pengeluaranList = pengeluaranList;
+        updateTotalUangLabel();
+        populateTable(pengeluaranList);
+        revalidate();
+        repaint();
     }
 }
