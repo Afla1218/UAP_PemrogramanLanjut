@@ -1,4 +1,3 @@
-```markdown
 # Pengelola Keuangan Pribadi
 
 **Pengelola Keuangan Pribadi** adalah aplikasi desktop berbasis Java yang dirancang untuk membantu pengguna mengelola pemasukan dan pengeluaran mereka secara efisien. Aplikasi ini menggunakan antarmuka pengguna grafis (GUI) dengan Java Swing dan menyimpan data ke dalam dokumen Word menggunakan Apache POI. Selain itu, aplikasi ini mendukung penyisipan bukti pengeluaran berupa gambar.
@@ -31,7 +30,6 @@
 - **Build Tool**: Maven (disarankan)
 
 ## 📂 Struktur Proyek
-
 ```
 PengelolaKeuangan/
 ├── src/
