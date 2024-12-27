@@ -25,6 +25,12 @@ public class WordHandler {
     // 1. SAVE & LOAD TOTAL UANG
     // ----------------------------
 
+    /**
+     * Saves the total money to a Word document.
+     *
+     * @param total The total amount of money to save.
+     * @throws IOException If an I/O error occurs.
+     */
     public static void saveTotalUang(double total) throws IOException {
         // Overwrite file: create new doc
         XWPFDocument document = new XWPFDocument();
@@ -43,6 +49,11 @@ public class WordHandler {
         }
     }
 
+    /**
+     * Loads the total money from a Word document.
+     *
+     * @return The total amount of money. Returns 0.0 if the file does not exist or contains invalid data.
+     */
     public static double loadTotalUang() {
         double total = 0.0;
         File file = new File(TOTAL_UANG_FILE);
@@ -51,18 +62,18 @@ public class WordHandler {
                  XWPFDocument document = new XWPFDocument(fis)) {
                 XWPFParagraph paragraph = document.getParagraphArray(0);
                 if (paragraph != null) {
-                    try {
-                        total = Double.parseDouble(paragraph.getText());
-                        System.out.println("Total uang loaded: " + total);
-                    } catch (NumberFormatException e) {
-                        // File corrupted: leave total = 0.0
-                        System.err.println("Invalid number format in total uang file.");
+                    String text = paragraph.getText().trim();
+                    if (!text.isEmpty()) {
+                        try {
+                            total = Double.parseDouble(text);
+                            System.out.println("Total uang loaded: " + total);
+                        } catch (NumberFormatException e) {
+                            System.err.println("Invalid number format in total uang file. Returning default value 0.0.");
+                        }
                     }
                 }
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null,
-                        "Gagal memuat total uang dari Word.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                System.err.println("Error reading total uang file. Returning default value 0.0.");
                 e.printStackTrace();
             }
         } else {
@@ -75,6 +86,12 @@ public class WordHandler {
     // 2. SAVE & LOAD PEMASUKAN
     // ----------------------------
 
+    /**
+     * Saves a single Pemasukan (income) entry to a Word document.
+     *
+     * @param pemasukan The Pemasukan object to save.
+     * @throws IOException If an I/O error occurs.
+     */
     public static void savePemasukan(Pemasukan pemasukan) throws IOException {
         // Overwrite file
         XWPFDocument document = new XWPFDocument();
@@ -106,13 +123,17 @@ public class WordHandler {
         }
     }
 
+    /**
+     * Loads the list of Pemasukan (income) entries from a Word document.
+     *
+     * @return A list of Pemasukan objects. Returns an empty list if the file does not exist or contains invalid data.
+     */
     public static List<Pemasukan> loadPemasukan() {
         List<Pemasukan> list = new ArrayList<>();
         File file = new File(PEMASUKAN_FILE);
         if (file.exists()) {
             try (FileInputStream fis = new FileInputStream(file);
                  XWPFDocument document = new XWPFDocument(fis)) {
-
                 List<XWPFTable> tables = document.getTables();
                 if (!tables.isEmpty()) {
                     XWPFTable table = tables.get(0);
@@ -120,18 +141,20 @@ public class WordHandler {
                     for (int i = 1; i < table.getNumberOfRows(); i++) {
                         XWPFTableRow row = table.getRow(i);
                         Pemasukan pm = new Pemasukan();
-                        pm.setId(Long.parseLong(row.getCell(0).getText()));
-                        pm.setJumlah(Double.parseDouble(row.getCell(1).getText()));
-                        pm.setDeskripsi(row.getCell(2).getText());
-                        pm.setTanggal(row.getCell(3).getText());
-                        list.add(pm);
+                        try {
+                            pm.setId(Long.parseLong(row.getCell(0).getText().trim()));
+                            pm.setJumlah(Double.parseDouble(row.getCell(1).getText().trim()));
+                            pm.setDeskripsi(row.getCell(2).getText().trim());
+                            pm.setTanggal(row.getCell(3).getText().trim());
+                            list.add(pm);
+                        } catch (Exception e) {
+                            System.err.println("Error parsing row data in pemasukan file. Skipping row.");
+                        }
                     }
                     System.out.println("Pemasukan loaded successfully. Total records: " + list.size());
                 }
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null,
-                        "Gagal memuat riwayat pemasukan dari Word.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                System.err.println("Error reading pemasukan file. Returning empty list.");
                 e.printStackTrace();
             }
         } else {
@@ -140,7 +163,12 @@ public class WordHandler {
         return list;
     }
 
-    // Overwrite file with list of pemasukan
+    /**
+     * Saves a list of Pemasukan (income) entries to a Word document.
+     *
+     * @param list The list of Pemasukan objects to save.
+     * @throws IOException If an I/O error occurs.
+     */
     public static void savePemasukanList(List<Pemasukan> list) throws IOException {
         XWPFDocument document = new XWPFDocument();
         XWPFTable table = document.createTable();
@@ -176,6 +204,12 @@ public class WordHandler {
     // 3. SAVE & LOAD PENGELUARAN
     // ----------------------------
 
+    /**
+     * Saves a single Pengeluaran (expense) entry to a Word document, including handling of bukti (proof) images.
+     *
+     * @param pengeluaran The Pengeluaran object to save.
+     * @throws IOException If an I/O error occurs.
+     */
     public static void savePengeluaran(Pengeluaran pengeluaran) throws IOException {
         // Ensure bukti_pengeluaran directory exists
         File buktiDir = new File(BUKTI_DIR);
@@ -256,6 +290,11 @@ public class WordHandler {
         }
     }
 
+    /**
+     * Loads the list of Pengeluaran (expense) entries from a Word document, including handling of bukti (proof) images.
+     *
+     * @return A list of Pengeluaran objects. Returns an empty list if the file does not exist or contains invalid data.
+     */
     public static List<Pengeluaran> loadPengeluaran() {
         List<Pengeluaran> list = new ArrayList<>();
         File file = new File(PENGELUARAN_FILE);
@@ -270,33 +309,35 @@ public class WordHandler {
                     for (int i = 1; i < table.getNumberOfRows(); i++) {
                         XWPFTableRow row = table.getRow(i);
                         Pengeluaran p = new Pengeluaran();
-                        p.setId(Long.parseLong(row.getCell(0).getText()));
-                        p.setJumlah(Double.parseDouble(row.getCell(1).getText()));
-                        p.setDeskripsi(row.getCell(2).getText());
-                        p.setTanggal(row.getCell(3).getText());
+                        try {
+                            p.setId(Long.parseLong(row.getCell(0).getText().trim()));
+                            p.setJumlah(Double.parseDouble(row.getCell(1).getText().trim()));
+                            p.setDeskripsi(row.getCell(2).getText().trim());
+                            p.setTanggal(row.getCell(3).getText().trim());
 
-                        // Handle bukti
-                        XWPFTableCell cellBukti = row.getCell(4);
-                        String buktiText = cellBukti.getText();
-                        // Check for error messages
-                        if (buktiText.contains("tidak ditemukan")
-                                || buktiText.contains("Format gambar")
-                                || buktiText.contains("Gagal")
-                                || buktiText.equals("Tidak ada bukti.")) {
-                            p.setBukti("");
-                            System.out.println("Bukti not found or invalid for pengeluaran ID: " + p.getId());
-                        } else {
-                            p.setBukti(buktiText.trim()); // e.g., "electronics.png"
-                            System.out.println("Bukti loaded: " + p.getBukti() + " for pengeluaran ID: " + p.getId());
+                            // Handle bukti
+                            XWPFTableCell cellBukti = row.getCell(4);
+                            String buktiText = cellBukti.getText().trim();
+                            // Check for error messages
+                            if (buktiText.contains("tidak ditemukan")
+                                    || buktiText.contains("Format gambar")
+                                    || buktiText.contains("Gagal")
+                                    || buktiText.equals("Tidak ada bukti.")) {
+                                p.setBukti("");
+                                System.out.println("Bukti not found or invalid for pengeluaran ID: " + p.getId());
+                            } else {
+                                p.setBukti(buktiText); // e.g., "electronics.png"
+                                System.out.println("Bukti loaded: " + p.getBukti() + " for pengeluaran ID: " + p.getId());
+                            }
+                            list.add(p);
+                        } catch (Exception e) {
+                            System.err.println("Error parsing row data in pengeluaran file. Skipping row.");
                         }
-                        list.add(p);
                     }
                     System.out.println("Pengeluaran loaded successfully. Total records: " + list.size());
                 }
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null,
-                        "Gagal memuat riwayat pengeluaran dari Word.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                System.err.println("Error reading pengeluaran file. Returning empty list.");
                 e.printStackTrace();
             }
         } else {
@@ -305,6 +346,12 @@ public class WordHandler {
         return list;
     }
 
+    /**
+     * Saves a list of Pengeluaran (expense) entries to a Word document, including handling of bukti (proof) images.
+     *
+     * @param list The list of Pengeluaran objects to save.
+     * @throws IOException If an I/O error occurs.
+     */
     public static void savePengeluaranList(List<Pengeluaran> list) throws IOException {
         // Ensure bukti_pengeluaran directory exists
         File buktiDir = new File(BUKTI_DIR);
@@ -389,6 +436,13 @@ public class WordHandler {
     // ----------------------------
     // UTIL: getImageFormat
     // ----------------------------
+
+    /**
+     * Determines the image format based on the file extension.
+     *
+     * @param imgFileName The name of the image file.
+     * @return The corresponding Apache POI image format constant, or -1 if unsupported.
+     */
     private static int getImageFormat(String imgFileName) {
         String lower = imgFileName.toLowerCase();
         if (lower.endsWith(".emf")) return Document.PICTURE_TYPE_EMF;
